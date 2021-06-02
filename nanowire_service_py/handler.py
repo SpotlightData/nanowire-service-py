@@ -1,7 +1,7 @@
 from typing import Tuple
 import psycopg2
 from .env import Environment
-from .wait_for_port import wait_for_port
+from .utils import wait_for_port
 from .worker import WorkerSpec
 
 class Handler:
@@ -44,5 +44,5 @@ class Handler:
         return (self.conn, _id, distributor)
 
 
-
+__all__ = ["Handler"]
 

@@ -1,6 +1,9 @@
 # type: ignore[attr-defined]
 """Wrapper for interacting with Nanowire platform"""
 from .env import *
+from .worker import *
+from .handler import *
+from .utils import *
 
 try:
     from importlib.metadata import PackageNotFoundError, version

@@ -1,17 +1,33 @@
 import json
 from typing import Any, Dict, Optional, Tuple, TypeVar, Generic
+from time import time
+from .collection import UsageCollection
+
 
 WorkerSpec =  Tuple[Any, str, str]
 
 class Worker:
     worker_id: str
     distributor_id: str
+    collection: UsageCollection
+    started: float
 
     def __init__(self, spec: WorkerSpec) -> None:
         (conn, worker_id, distributor_id) = spec
         self.conn = conn
         self.worker_id = worker_id
         self.distributor_id = distributor_id
+        self.collection = UsageCollection()
+        self.started = time()
+
+    def start_tracking(self) -> None:
+        self.collection.start_collection()
+        self.started = time()
+
+    def finish(self, task_id: str, result: Dict[str, Any], meta: Dict[str, Any]) -> None:
+        [max_mem, max_cpu] = self.collection.finish_collection()
+        time_taken = round(time() - self.started, 2)
+        self.finish_task(task_id, {**result, "max_cpu": max_cpu, "max_mem": max_mem, "time_taken": time_taken}, meta)
 
     # Allow user to cast it on their end
     def get_task(self, task_id: str) -> Optional[Tuple[Any, Any]]:
