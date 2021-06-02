@@ -30,6 +30,8 @@ classifiers = [  # Update me
 
 [tool.poetry.dependencies]
 python = "^3.8.5"
+pydantic = "^1.8.2"
+psycopg2 = "^2.8.6"
 
 [tool.poetry.dev-dependencies]
 darglint = "^1.5.8"
