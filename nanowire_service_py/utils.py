@@ -1,6 +1,5 @@
 import time
 import socket
-import pandas as pd
 import io
 import requests
 from contextlib import contextmanager
@@ -26,13 +25,12 @@ def wait_for_port(port: int, host: str ='localhost', wait_time: float=1.0, timeo
                 raise TimeoutError('Waited too long for the port {} on host {} to start accepting '
                                    'connections.'.format(port, host)) from ex
 
-@contextmanager
-def with_dataframe(url: str) -> Any:
-    response = requests.get(url).content
-    df = pd.read_csv(io.StringIO(response.decode('utf-8')))
-    try:
-        yield df
-    finally:
-        df.iloc[0:0]
+class RuntimeError(Exception):
+    errors: Any
 
-__all__ = ["wait_for_port", "with_dataframe"]
+    def __init__(self, message, errors):
+        super().__init__(message)
+        # Now for your custom code...
+        self.errors = errors
+
+__all__ = ["wait_for_port", "RuntimeError"]

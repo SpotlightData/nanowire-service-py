@@ -3,10 +3,11 @@ import psutil
 import threading
 from queue import Queue
 import time
+from typing import Any
 
 class UsageCollection:
-    cpus_queue: Queue[float]
-    mem_queue: Queue[float]
+    cpus_queue: Any
+    mem_queue: Any
 
     def __init__(self):
         # CPUs are collected in % usage

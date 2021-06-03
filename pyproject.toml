@@ -33,7 +33,7 @@ python = "^3.8.5"
 pydantic = "^1.8.2"
 psycopg2 = "^2.8.6"
 psutil = "^5.8.0"
-pandas = "^1.2.4"
+fastapi = "^0.65.1"
 
 [tool.poetry.dev-dependencies]
 darglint = "^1.5.8"

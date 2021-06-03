@@ -5,8 +5,8 @@ class Environment(BaseModel):
     DAPR_HTTP_PORT: int
     DAPR_APP_ID: str
     PUB_SUB: str
-    # Server
-    PORT: int = 5000
+    # Whether we should wait for DAPR server to be active before loading
+    NO_WAIT: bool = False
     # Postgres connection details
     POSTGRES_URL: str
     POSTGRES_SCHEMA: str
@@ -16,4 +16,11 @@ class Environment(BaseModel):
     # TODO: remove in the future
     TASK_DISTRIBUTOR_ID: str = '62eba219-1ef0-4069-affa-86b892d026f8'
 
-__all__ = ["Environment"]
+class TaskBodyData(BaseModel):
+    id: str
+
+class TaskBody(BaseModel):
+    id: str
+    data: TaskBodyData
+
+__all__ = ["Environment", "TaskBodyData", "TaskBody"]

@@ -24,6 +24,13 @@ class Worker:
         self.collection.start_collection()
         self.started = time()
 
+    def stop_tracking(self) -> None:
+        """
+            Should only be used when handling failure.
+            Otherwise finish() method should be used
+        """
+        self.collection.finish_collection()
+
     def finish(self, task_id: str, result: Dict[str, Any], meta: Dict[str, Any]) -> None:
         [max_mem, max_cpu] = self.collection.finish_collection()
         time_taken = round(time() - self.started, 2)
@@ -34,7 +41,7 @@ class Worker:
         cur = self.conn.cursor()
         cur.execute("""
             select args, meta
-            from get_task($1::uuid, $2::uuid, $3::uuid);
+            from get_task(%s::uuid, %s::uuid, %s::uuid);
         """, [self.distributor_id, self.worker_id, task_id])
         row = cur.fetchone()
         self.conn.commit()
@@ -45,7 +52,7 @@ class Worker:
 
     def task_done(self, mode: str, task_id: str, result: Dict[str, Any], meta: Dict[str, Any]) -> None:
         cur = self.conn.cursor()
-        cur.execute("select ${}_task($1::uuid, $2::jsonb, $3::jsonb)".format(mode), [task_id, json.dumps(result), json.dumps(meta)])
+        cur.execute("select {}_task(%s::uuid, %s::jsonb, %s::jsonb)".format(mode), [task_id, json.dumps(result), json.dumps(meta)])
         self.conn.commit()
         cur.close()
 
