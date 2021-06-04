@@ -2,21 +2,23 @@ import json
 from typing import Any, Dict, Optional, Tuple, TypeVar, Generic
 from time import time
 from .collection import UsageCollection
+import requests
 
-
-WorkerSpec =  Tuple[Any, str, str]
+WorkerSpec =  Tuple[Any, str, str, str]
 
 class Worker:
     worker_id: str
     distributor_id: str
+    pending_endpoint: str
     collection: UsageCollection
     started: float
 
     def __init__(self, spec: WorkerSpec) -> None:
-        (conn, worker_id, distributor_id) = spec
+        (conn, worker_id, distributor_id, pending_endpoint) = spec
         self.conn = conn
         self.worker_id = worker_id
         self.distributor_id = distributor_id
+        self.pending_endpoint = pending_endpoint
         self.collection = UsageCollection()
         self.started = time()
 
@@ -50,16 +52,22 @@ class Worker:
             return (row[0], row[1])
         return None
 
-    def task_done(self, mode: str, task_id: str, result: Dict[str, Any], meta: Dict[str, Any]) -> None:
+    def task_done(self, mode: str, task_id: str, result: Dict[str, Any], meta: Dict[str, Any]) -> Any:
         cur = self.conn.cursor()
         cur.execute("select {}_task(%s::uuid, %s::jsonb, %s::jsonb)".format(mode), [task_id, json.dumps(result), json.dumps(meta)])
         self.conn.commit()
-        cur.close()
+        return cur
 
     def finish_task(self, task_id: str, result: Dict[str, Any], meta: Dict[str, Any]) -> None:
-        self.task_done('finish', task_id, result, meta)
+        # Make request before commiting to avoid dapr going out of sync with Database
+        cur = self.task_done('finish', task_id, result, meta)
+        requests.post(self.pending_endpoint, { "id": task_id })
+        self.conn.commit()
+        cur.close()
 
     def fail_task(self, task_id: str, result: Dict[str, Any], meta: Dict[str, Any]) -> None:
-        self.task_done('fail', task_id, result, meta)
+        cur = self.task_done('fail', task_id, result, meta)
+        self.conn.commit()
+        cur.close()
 
 __all__ = ["WorkerSpec", "Worker"]

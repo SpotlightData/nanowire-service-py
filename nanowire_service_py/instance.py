@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Union
 import psycopg2
 from .types import Environment
 from .utils import wait_for_port
@@ -32,7 +32,10 @@ class Instance:
         cur.close()
         return (_id, self.env.TASK_DISTRIBUTOR_ID)
 
-
+    @property
+    def log_level(self) -> Union[str, int]:
+        return self.env.LOG_LEVEL
+    
     def setup(self) -> WorkerSpec:
         """
             - Wait until DAPR port is available
@@ -42,7 +45,8 @@ class Instance:
         if not self.env.NO_WAIT:
             wait_for_port(self.env.DAPR_HTTP_PORT)
         (_id, distributor) = self.register()
-        return (self.conn, _id, distributor)
+        pending_endpoint = "http://localhost:{}/v1.0/publish/${}/pending".format(self.env.DAPR_HTTP_PORT, self.env.PUB_SUB)
+        return (self.conn, _id, distributor, pending_endpoint)
 
 
 __all__ = ["Instance"]

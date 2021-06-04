@@ -1,7 +1,6 @@
 import logging
 import json
-import traceback
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, Union
 from fastapi import Response
 from pydantic import ValidationError
 
@@ -12,11 +11,11 @@ class Handler:
     worker: Worker
     logger: logging.Logger
 
-    def __init__(self, spec: WorkerSpec, log_level: int = logging.DEBUG) -> None:
+    def __init__(self, spec: WorkerSpec, log_level: Union[str, int]) -> None:
         self.worker = Worker(spec)
         self.logger = self.configure_logging(log_level)
 
-    def configure_logging(self, log_level):
+    def configure_logging(self, log_level: Union[str, int]) -> logging.Logger:
         logger = logging.getLogger("Handler")
         logger.setLevel(log_level)
         # Format for our loglines
@@ -51,7 +50,8 @@ class Handler:
             self.logger.debug("Received task from database [%s]", task_id)
             args = self.validate_args(args)
             (result, meta) = self.handle_body(args, meta)
-            # self.worker.finish_task(task_id, result, meta)
+            # Finish the task
+            self.worker.finish_task(task_id, result, meta)
             self.logger.debug("Task finished [%s]", task_id)
         except ValidationError as e:
             self.logger.warn("Failed to validate arguments: %s", repr(e))
