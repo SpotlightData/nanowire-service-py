@@ -1,8 +1,5 @@
 import time
 import socket
-import io
-import requests
-from contextlib import contextmanager
 from typing import Any
 
 def wait_for_port(port: int, host: str ='localhost', wait_time: float=1.0, timeout: float=20.0) -> None:
