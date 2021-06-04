@@ -17,10 +17,10 @@ repository = "https://github.com/SpotlightData/nanowire-service-py"
 homepage = "https://github.com/SpotlightData/nanowire-service-py"
 
 # Keywords description https://python-poetry.org/docs/pyproject/#keywords
-keywords = []  # Update me
+keywords = ["nanowire", "pipelines"]  # Update me
 
 # Pypi classifiers: https://pypi.org/classifiers/
-classifiers = [  # Update me
+classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
