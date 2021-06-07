@@ -58,11 +58,10 @@ class Worker:
         return cur
 
     def finish_task(self, task_id: str, result: Dict[str, Any], meta: Dict[str, Any]) -> None:
-        # Make request before commiting to avoid dapr going out of sync with Database
         cur = self.task_done('finish', task_id, result, meta)
-        requests.post(self.pending_endpoint, data={ "id": task_id })
         self.conn.commit()
         cur.close()
+        requests.post(self.pending_endpoint, json={"id": task_id})
 
     def fail_task(self, task_id: str, result: Dict[str, Any], meta: Dict[str, Any]) -> None:
         cur = self.task_done('fail', task_id, result, meta)

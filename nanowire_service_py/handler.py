@@ -51,8 +51,9 @@ class Handler:
             args = self.validate_args(args)
             (result, meta) = self.handle_body(args, meta)
             # Finish the task
-            self.worker.finish_task(task_id, result, meta)
+            self.worker.finish(task_id, result, meta)
             self.logger.debug("Task finished [%s]", task_id)
+            self.logger.debug("Published pending to %s", self.worker.pending_endpoint)
         except ValidationError as e:
             self.logger.warn("Failed to validate arguments: %s", repr(e))
             self.worker.stop_tracking()
