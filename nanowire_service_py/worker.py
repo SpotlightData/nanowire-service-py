@@ -55,13 +55,12 @@ class Worker:
     def task_done(self, mode: str, task_id: str, result: Dict[str, Any], meta: Dict[str, Any]) -> Any:
         cur = self.conn.cursor()
         cur.execute("select {}_task(%s::uuid, %s::jsonb, %s::jsonb)".format(mode), [task_id, json.dumps(result), json.dumps(meta)])
-        self.conn.commit()
         return cur
 
     def finish_task(self, task_id: str, result: Dict[str, Any], meta: Dict[str, Any]) -> None:
         # Make request before commiting to avoid dapr going out of sync with Database
         cur = self.task_done('finish', task_id, result, meta)
-        requests.post(self.pending_endpoint, { "id": task_id })
+        requests.post(self.pending_endpoint, data={ "id": task_id })
         self.conn.commit()
         cur.close()
 
