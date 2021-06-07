@@ -12,7 +12,7 @@ class Instance:
         self.env = env
 
     def subscriptions(self):
-        return { "topic": self.env.DAPR_APP_ID, "route": "/subscription", "pubsubname": self.env.PUB_SUB }
+        return [{ "topic": self.env.DAPR_APP_ID, "route": "/subscription", "pubsubname": self.env.PUB_SUB }]
 
     def register(self) -> Tuple[str, str]:
         cur = self.conn.cursor()
