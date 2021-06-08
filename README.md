@@ -20,7 +20,9 @@ Wrapper for interacting with Nanowire platform
 
 This library is designed for tight integration with Nanowire platform (created by Spotlight Data).
 
-The primary code logic should be placed in a sub-class of `Handler`. User is expected to implement `validate_args` as well as `handle_body` methods:
+The library does not have a hardcode requirement for a specific web server, but I'd recommend using [fastapi](https://fastapi.tiangolo.com/) due to it's simplicity and speed
+
+The primary code logic should be placed in a sub-class of `BaseHandler`. User is expected to implement `validate_args` as well as `handle_body` methods:
 
 ```python
 import os
@@ -32,7 +34,7 @@ from typing import Any, List, Optional
 
 import pandas as pd
 
-from nanowire_service_py import Instance, Handler, Environment, TaskBody, RuntimeError
+from nanowire_service_py import BaseHandler, create, TaskBody
 from toolbox import ClusterTool
 
 load_dotenv()
@@ -58,15 +60,15 @@ class Arguments(BaseModel):
         return method
 
 # Our custom handler
-class MyHandler(Handler):
+class MyHandler(BaseHandler):
     def __init__(self, *args):
         super().__init__(*args)
         self.cluster_tool = ClusterTool(self.logger)
 
-    def validate_args(self, args: Any) -> Arguments:
+    def validate_args(self, args: Any, task_id: str) -> Arguments:
         return Arguments(**args)
 
-    def handle_body(self, args: Arguments, meta: Any):
+    def handle_body(self, args: Arguments, meta: Any, task_id: str):
         df = pd.read_csv(args.contentUrl, dtype='unicode')
 
         if args.textCol not in df.columns:
@@ -79,23 +81,21 @@ class MyHandler(Handler):
         return (result, meta)
 
 # Always handled by the library, pass environment directly 
-instance = Instance(Environment(**os.environ))
-# Inherit worker specifications and logs from instance
-handler = MyHandler(instance.setup(), instance.log_level)
-# Router 
+executor = create(os.environ, MyHandler)
+
 app = FastAPI()
 
 # Let's DAPR know which topics should be subscribed to
 @app.get("/dapr/subscribe")
 def subscribe():
-    return instance.subscriptions()
+    return executor.subscriptions
 
 # Primary endpoint, where request will be delivered to
 # TaskBody type here verifies the post body
 @app.post("/subscription")
 def subscription(body: TaskBody, response: Response):
-    task_id = body.data.id
-    handler.handle_request(task_id, response)
+    status = handler.handle_request(body.data.id)
+    response.status = status
     # Return empty body so dapr doesn't freak out
     return {}
 ```
