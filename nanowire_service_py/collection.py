@@ -5,6 +5,7 @@ from queue import Queue
 import time
 from typing import Any
 
+
 class UsageCollection:
     cpus_queue: Any
     mem_queue: Any
@@ -12,7 +13,7 @@ class UsageCollection:
     def __init__(self):
         # CPUs are collected in % usage
         self.cpus_queue = Queue()
-        #memory queue is in MB
+        # memory queue is in MB
         self.mem_queue = Queue()
         self.running = False
 
@@ -21,7 +22,9 @@ class UsageCollection:
         self.running = True
         while self.running:
             self.cpus_queue.put_nowait(psutil.cpu_percent())
-            self.mem_queue.put_nowait(psutil.Process(os.getpid()).memory_info().rss/1e6)
+            self.mem_queue.put_nowait(
+                psutil.Process(os.getpid()).memory_info().rss / 1e6
+            )
             time.sleep(0.01)
 
     def finish_collection(self):
@@ -39,12 +42,13 @@ class UsageCollection:
             max_mem = max(mems)
             max_cpu = max(cpus)
         else:
-            max_mem = psutil.Process(os.getpid()).memory_info().rss/1e6
+            max_mem = psutil.Process(os.getpid()).memory_info().rss / 1e6
             max_cpu = psutil.cpu_percent()
 
         return [max_mem, max_cpu]
 
     def start_collection(self):
         threading.Thread(target=self.collection_thread).start()
+
 
 __all__ = ["UsageCollection"]

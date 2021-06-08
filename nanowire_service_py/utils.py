@@ -2,7 +2,13 @@ import time
 import socket
 from typing import Any
 
-def wait_for_port(port: int, host: str ='localhost', wait_time: float=1.0, timeout: float=20.0) -> None:
+
+def wait_for_port(
+    port: int,
+    host: str = "localhost",
+    wait_time: float = 1.0,
+    timeout: float = 20.0,
+) -> None:
     """Wait until a port starts accepting TCP connections.
     Args:
         port (int): Port number.
@@ -19,8 +25,11 @@ def wait_for_port(port: int, host: str ='localhost', wait_time: float=1.0, timeo
         except OSError as ex:
             time.sleep(wait_time)
             if time.perf_counter() - start_time >= timeout:
-                raise TimeoutError('Waited too long for the port {} on host {} to start accepting '
-                                   'connections.'.format(port, host)) from ex
+                raise TimeoutError(
+                    "Waited too long for the port {} on host {} to start accepting "
+                    "connections.".format(port, host)
+                ) from ex
+
 
 class RuntimeError(Exception):
     errors: Any
@@ -29,5 +38,6 @@ class RuntimeError(Exception):
         super().__init__(message)
         # Now for your custom code...
         self.errors = errors
+
 
 __all__ = ["wait_for_port", "RuntimeError"]

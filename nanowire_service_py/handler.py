@@ -7,6 +7,7 @@ from pydantic import ValidationError
 from .utils import RuntimeError
 from .worker import Worker, WorkerSpec
 
+
 class Handler:
     worker: Worker
     logger: logging.Logger
@@ -53,7 +54,9 @@ class Handler:
             # Finish the task
             self.worker.finish(task_id, result, meta)
             self.logger.debug("Task finished [%s]", task_id)
-            self.logger.debug("Published pending to %s", self.worker.pending_endpoint)
+            self.logger.debug(
+                "Published pending to %s", self.worker.pending_endpoint
+            )
         except ValidationError as e:
             self.logger.warn("Failed to validate arguments: %s", repr(e))
             self.worker.stop_tracking()
@@ -65,7 +68,9 @@ class Handler:
             self.logger.warn("Failed via RuntimeError: %s", repr(e))
             self.worker.stop_tracking()
             # NOTE: is there a way to extract json without parsing?
-            self.worker.fail_task(task_id, {"exception": repr(e), "errors": e.errors }, meta)
+            self.worker.fail_task(
+                task_id, {"exception": repr(e), "errors": e.errors}, meta
+            )
             # Return normal response so dapr doesn't retry
             return
         except Exception as e:
@@ -74,5 +79,6 @@ class Handler:
             self.logger.error(e)
             response.status_code = 500
             return
+
 
 __all__ = ["Handler"]

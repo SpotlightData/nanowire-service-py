@@ -1,6 +1,7 @@
 from typing import Union
 from pydantic import BaseModel
 
+
 class Environment(BaseModel):
     # Dapr spect
     DAPR_HTTP_PORT: int
@@ -16,13 +17,16 @@ class Environment(BaseModel):
     # between scaled pods
     WORKER_SUFFIX: str = ""
     # TODO: remove in the future
-    TASK_DISTRIBUTOR_ID: str = '62eba219-1ef0-4069-affa-86b892d026f8'
+    TASK_DISTRIBUTOR_ID: str = "62eba219-1ef0-4069-affa-86b892d026f8"
+
 
 class TaskBodyData(BaseModel):
     id: str
 
+
 class TaskBody(BaseModel):
     id: str
     data: TaskBodyData
+
 
 __all__ = ["Environment", "TaskBodyData", "TaskBody"]
