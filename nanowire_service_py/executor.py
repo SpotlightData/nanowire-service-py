@@ -1,7 +1,6 @@
 import logging
 import json
 from typing import Any, Dict, List, Optional, Tuple, Union
-from fastapi import Response
 from pydantic import ValidationError
 
 from .utils import RuntimeError
@@ -51,12 +50,15 @@ class Executor:
         # logger.addHandler(fh)
         return logger
 
-    def handle_request(self, task_id: str, response: Response) -> None:
+    def handle_request(self, task_id: str) -> int:
+        """
+            Returned status code should be passed to the used server implementation
+        """
         self.logger.debug("Task request received")
         task = self.worker.get_task(task_id)
         if task is None:
             self.logger.warn("Task was not found, already processed?")
-            return
+            return 200
         self.worker.start_tracking()
         (args, meta) = task
         try:
@@ -69,28 +71,27 @@ class Executor:
             self.logger.debug(
                 "Published pending to %s", self.worker.pending_endpoint
             )
+            return 200
         except ValidationError as e:
             self.logger.warn("Failed to validate arguments: %s", repr(e))
             self.worker.stop_tracking()
             # NOTE: is there a way to extract json without parsing?
             self.worker.fail_task(task_id, json.loads(e.json()), meta)
             # Return normal response so dapr doesn't retry
-            return
+            return 200
         except RuntimeError as e:
             self.logger.warn("Failed via RuntimeError: %s", repr(e))
             self.worker.stop_tracking()
-            # NOTE: is there a way to extract json without parsing?
             self.worker.fail_task(
                 task_id, {"exception": repr(e), "errors": e.errors}, meta
             )
             # Return normal response so dapr doesn't retry
-            return
+            return 200
         except Exception as e:
             # Unknown exections should cause dapr to retry
             self.worker.stop_tracking()
             self.logger.error(e)
-            response.status_code = 500
-            return
+            return 500
 
 
 __all__ = ["Executor"]
