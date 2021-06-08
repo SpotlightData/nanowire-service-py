@@ -95,6 +95,10 @@ install:
 	poetry lock -n
 	poetry install -n
 
+.PHONE: install-hooks
+install-hooks:
+	cp ./hooks/* ./.git/hooks
+
 .PHONY: check-safety
 check-safety:
 	$(POETRY_COMMAND_FLAG)poetry check
