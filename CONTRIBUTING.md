@@ -9,13 +9,13 @@ If you dont have `poetry` installed, you should run the command below.
 make download-poetry
 ```
 
-To install dependencies and prepare [`pre-commit`](https://pre-commit.com/) hooks you would need to run `install` command:
+To install dependencies and install git hooks you would need to run `install` command:
 
 ```bash
 make install
 ```
 
-To activate your `virtualenv` run `poetry shell`.
+To activate your `virtualenv` run `poetry shell` or `poetry env use 3.8`.
 
 ## Codestyle
 

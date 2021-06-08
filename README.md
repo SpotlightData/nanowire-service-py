@@ -116,7 +116,7 @@ Anything else, that raises unexpected exception should be retried automatically.
 
 ## Contributing
 
-Read **CONTRIBUTING.md**
+Read [CONTRIBUTING.md](CONTRIBUTING.md)
 
 
 ## 🛡 License
