@@ -1,6 +1,6 @@
 import logging
 import json
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from pydantic import ValidationError
 
 from .utils import RuntimeError
@@ -18,17 +18,17 @@ class Executor:
 
     def __init__(
         self,
-        handler: BaseHandler,
+        make_handler: Callable[[logging.Logger], BaseHandler],
         instance: Instance,
-        logger: Optional[logging.Logger] = None
+        logger: Optional[logging.Logger] = None,
     ) -> None:
         self.worker = Worker(instance.setup())
-        self.handler = handler
         self.subscriptions = instance.subscriptions()
         if logger:
             self.logger = logger
         else:
             self.logger = self.configure_logging(instance.log_level)
+        self.handler = make_handler(self.logger)
 
     def configure_logging(self, log_level: Union[str, int]) -> logging.Logger:
         if isinstance(log_level, str):
@@ -52,19 +52,19 @@ class Executor:
 
     def handle_request(self, task_id: str) -> int:
         """
-            Returned status code should be passed to the used server implementation
+        Returned status code should be passed to the used server implementation
         """
         self.logger.debug("Task request received")
         task = self.worker.get_task(task_id)
         if task is None:
-            self.logger.warn("Task was not found, already processed?")
+            self.logger.warning("Task was not found, already processed?")
             return 200
         self.worker.start_tracking()
         (args, meta) = task
         try:
             self.logger.debug("Received task from database [%s]", task_id)
-            args = self.handler.validate_args(args)
-            (result, meta) = self.handler.handle_body(args, meta)
+            args = self.handler.validate_args(args, task_id)
+            (result, meta) = self.handler.handle_body(args, meta, task_id)
             # Finish the task
             self.worker.finish(task_id, result, meta)
             self.logger.debug("Task finished [%s]", task_id)
@@ -73,14 +73,14 @@ class Executor:
             )
             return 200
         except ValidationError as e:
-            self.logger.warn("Failed to validate arguments: %s", repr(e))
+            self.logger.warning("Failed to validate arguments: %s", repr(e))
             self.worker.stop_tracking()
             # NOTE: is there a way to extract json without parsing?
             self.worker.fail_task(task_id, json.loads(e.json()), meta)
             # Return normal response so dapr doesn't retry
             return 200
         except RuntimeError as e:
-            self.logger.warn("Failed via RuntimeError: %s", repr(e))
+            self.logger.warning("Failed via RuntimeError: %s", repr(e))
             self.worker.stop_tracking()
             self.worker.fail_task(
                 task_id, {"exception": repr(e), "errors": e.errors}, meta
