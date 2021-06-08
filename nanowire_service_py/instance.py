@@ -51,14 +51,11 @@ class Instance:
     def log_level(self) -> Union[str, int]:
         return self.env.LOG_LEVEL
 
-    def setup(self) -> WorkerSpec:
-        """
-        - Wait until DAPR port is available
-        - Register the worker
-        Returns spec, which can be passed to worker
-        """
+    def wait_for_dapr(self) -> None:
         if not self.env.NO_WAIT:
             wait_for_port(self.env.DAPR_HTTP_PORT)
+
+    def setup(self) -> WorkerSpec:
         (_id, distributor) = self.register()
         pending_endpoint = "http://localhost:{}/v1.0/publish/{}/pending".format(
             self.env.DAPR_HTTP_PORT, self.env.PUB_SUB
