@@ -94,6 +94,10 @@ download-poetry:
 install-hooks:
 	cp ./hooks/* ./.git/hooks
 
+.PHONY: changelog
+changelog:
+	git-chglog -o CHANGELOG.md 0.1.5..
+
 .PHONY: install
 install: install-hooks
 	poetry lock -n
