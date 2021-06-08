@@ -82,9 +82,10 @@ jobs:
         path: ./dist
    
     - name: Publish
+      shell: bash
       env:
         PYPY_USERNAME: ${{ secrets.PYPY_USERNAME }}
-        PYPY_PASSWORD: ${{ secrets.PYPY_USERNAME }}
+        PYPY_PASSWORD: ${{ secrets.PYPY_PASSWORD }}
       run: |
         source "$HOME/.poetry/env"
-        poetry publish -u $PYPY_PASSWORD -p $PYPY_PASSWORD
+        poetry publish --username $PYPY_USERNAME --password $PYPY_PASSWORD
