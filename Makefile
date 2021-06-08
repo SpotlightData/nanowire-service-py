@@ -90,14 +90,14 @@ endif
 download-poetry:
 	curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
 
-.PHONY: install
-install:
-	poetry lock -n
-	poetry install -n
-
 .PHONE: install-hooks
 install-hooks:
 	cp ./hooks/* ./.git/hooks
+
+.PHONY: install
+install: install-hooks
+	poetry lock -n
+	poetry install -n
 
 .PHONY: check-safety
 check-safety:
