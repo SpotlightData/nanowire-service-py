@@ -1,6 +1,13 @@
 name: build
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+      - main
+      - release-*
+    tags:
+      - '*'
 
 jobs:
   build:
@@ -75,6 +82,9 @@ jobs:
         path: ./dist
    
     - name: Publish
+      env:
+        PYPY_USERNAME: ${{ secrets.PYPY_USERNAME }}
+        PYPY_PASSWORD: ${{ secrets.PYPY_USERNAME }}
       run: |
         source "$HOME/.poetry/env"
-        poetry publish -u ${{ secrets.PYPY_USERNAME }} -p ${{ secrets.PYPY_PASSWORD }}
+        poetry publish -u $PYPY_PASSWORD -p $PYPY_PASSWORD
