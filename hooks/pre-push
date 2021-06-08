@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+import re, sys, os
+import toml
+import subprocess
+
+result = subprocess.run(['bash', '-c', "grep -Po 'refs/tags/([^ ]*) ' </dev/stdin | head -n1 | cut -c11- | tr -d '[:space:]'"], stdout=subprocess.PIPE)
+version = result.stdout.decode('utf8')
+
+if len(version) == 0:
+    exit(0)
+
+with open("{}/pyproject.toml".format(os.getcwd()), 'r') as f:
+    parsed_toml = toml.loads(f.read())
+
+expected = parsed_toml['tool']['poetry']['version']
+
+if expected != version:
+    print("pyproject.toml defines version as [{}], tag was under [{}]".format(expected, version))
+    exit(1)
