@@ -42,6 +42,7 @@ mypy = "0.812"
 pytest = "^6.2.1"
 pylint = "^2.6.0"
 pydocstyle = "^5.1.1"
+pytest-mock = "^3.6.1"
 
 [tool.black]
 # https://github.com/psf/black
