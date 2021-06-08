@@ -1,5 +1,5 @@
 """Wrapper for interacting with Nanowire platform"""
-from nanowire_service_py.executor import Executor
+from .executor import Executor
 from typing import Dict
 from .types import *
 from .worker import *
