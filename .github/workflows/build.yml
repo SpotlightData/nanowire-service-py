@@ -24,6 +24,7 @@ jobs:
       with:
         path: .venv
         key: venv-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('poetry.lock') }}
+
     - name: Install dependencies
       run: |
         source "$HOME/.poetry/env"
@@ -39,3 +40,41 @@ jobs:
       run: |
         source "$HOME/.poetry/env"
         make test
+    
+    - name: Build
+      run: |
+        source "$HOME/.poetry/env"
+        poetry build
+    
+    - name: upload artifacts
+      uses: actions/upload-artifact@master
+      with:
+        name: wheels
+        path: ./dist
+  
+  publish:
+    name: "Publish releases"
+    needs: build
+    runs-on: ubuntu-latest
+    # if: startswith(github.ref, 'refs/tags/')
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python 3.8.5
+      uses: actions/setup-python@v2.2.1
+      with:
+        python-version: 3.8.5
+
+    - name: Install poetry
+      run: make download-poetry
+      
+    - name: Download artifacts
+      uses: actions/download-artifact@master
+      with:
+        name: wheels
+        path: ./dist
+   
+    - name: Publish
+      run: |
+        source "$HOME/.poetry/env"
+        poetry publish -u ${{ secrets.PYPY_USERNAME }} -p ${{ secrets.PYPY_PASSWORD }}
