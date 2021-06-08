@@ -114,7 +114,7 @@ check-safety:
 check-style:
 	$(BLACK_COMMAND_FLAG)poetry run black --config pyproject.toml --diff --check ./
 	$(DARGLINT_COMMAND_FLAG)poetry run darglint -v 2 **/*.py
-	$(MYPY_COMMAND_FLAG)poetry run mypy --config-file setup.cfg nanowire_service_py tests/**/*.py
+	$(MYPY_COMMAND_FLAG)poetry run mypy --config-file setup.cfg nanowire_service_py tests/*.py
 
 .PHONY: codestyle
 codestyle:
