@@ -2,6 +2,7 @@ import logging
 import json
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from pydantic import ValidationError
+import traceback
 
 from .utils import RuntimeError
 from .worker import Worker, WorkerSpec
@@ -54,7 +55,7 @@ class Executor:
         """
         Returned status code should be passed to the used server implementation
         """
-        self.logger.debug("Task request received")
+        self.logger.debug("Task request received [%s]", task_id)
         task = self.worker.get_task(task_id)
         if task is None:
             self.logger.warning("Task was not found, already processed?")
@@ -88,6 +89,8 @@ class Executor:
             # Return normal response so dapr doesn't retry
             return 200
         except Exception as e:
+            self.logger.error("Failed via Exception: %s", repr(e))
+            traceback.print_exc()
             # Unknown exections should cause dapr to retry
             self.worker.stop_tracking()
             self.logger.error(e)
