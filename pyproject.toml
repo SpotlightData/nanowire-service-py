@@ -6,7 +6,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "nanowire-service-py"
-version = "0.3.2"
+version = "0.3.3"
 description = "Wrapper for interacting with Nanowire platform"
 readme = "README.md"
 authors = [
