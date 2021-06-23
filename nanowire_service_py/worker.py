@@ -1,24 +1,25 @@
 import json
 from typing import Any, Dict, Optional, Tuple, TypeVar, Generic
-from time import time
+from time import time, sleep
 from .collection import UsageCollection
 import requests
 
-WorkerSpec = Tuple[Any, str, str, str]
+# (Postgres conn, worker_id, heartbeat_timeout, pending_endpoint)
+WorkerSpec = Tuple[Any, str, int, str]
 
 
 class Worker:
     worker_id: str
-    distributor_id: str
+    heartbeat_timeout: int
     pending_endpoint: str
     collection: UsageCollection
     started: float
 
     def __init__(self, spec: WorkerSpec) -> None:
-        (conn, worker_id, distributor_id, pending_endpoint) = spec
+        (conn, worker_id, heartbeat_timeout, pending_endpoint) = spec
         self.conn = conn
         self.worker_id = worker_id
-        self.distributor_id = distributor_id
+        self.heartbeat_timeout = heartbeat_timeout
         self.pending_endpoint = pending_endpoint
         self.collection = UsageCollection()
         self.started = time()
@@ -56,9 +57,9 @@ class Worker:
         cur.execute(
             """
             select args, meta
-            from get_task(%s::uuid, %s::uuid, %s::uuid);
+            from get_task(%s::uuid, %s::uuid);
         """,
-            [self.distributor_id, self.worker_id, task_id],
+            [self.worker_id, task_id],
         )
         row = cur.fetchone()
         self.conn.commit()
@@ -95,6 +96,21 @@ class Worker:
         cur = self.task_done("fail", task_id, result, meta)
         self.conn.commit()
         cur.close()
+
+    def heartbeat(self) -> None:
+        cur = self.conn.cursor()
+        cur.execute(
+            """
+            update workers
+            set last_alive = now()
+            where id = %s
+        """,
+            [self.worker_id],
+        )
+        self.conn.commit()
+        cur.close()
+        sleep(self.heartbeat_timeout)
+        self.heartbeat()
 
 
 __all__ = ["WorkerSpec", "Worker"]
