@@ -8,6 +8,8 @@ from pydantic import BaseModel
 
 from nanowire_service_py import create, BaseHandler, RuntimeError
 
+service_id = "my_service"
+heartbeat = 1
 mock_env = {
     "DAPR_HTTP_PORT": "4040",
     "DAPR_APP_ID": "mock",
@@ -16,8 +18,8 @@ mock_env = {
     "LOG_LEVEL": "DEBUG",
     "POSTGRES_URL": "mock-url",
     "POSTGRES_SCHEMA": "mock-schema",
-    "WORKER_SUFFIX": "",
-    "TASK_DISTRIBUTOR_ID": "62eba219-1ef0-4069-affa-86b892d026f8",
+    "SCHEDULER_PUB_SUB": "mocked-sub",
+    "SERVICE_ID": service_id
 }
 
 
@@ -43,7 +45,7 @@ def test_create(mocker: MockerFixture) -> None:
     base_checks = {
         "conn_created": False,
         "worker_created": False,
-        "worker_registered": False,
+        "config_retrieved": False,
         "published_pending": False,
     }
     # Validate all tasks went through
@@ -79,14 +81,13 @@ def test_create(mocker: MockerFixture) -> None:
         def __init__(self) -> None:
             self.last_request = None
 
-        def execute(self, query: Any, args: List[Any]) -> None:
-            if "insert into workers (tag)" in query:
-                assert args == [mock_env["DAPR_APP_ID"]]
-                self.last_request = "register"
+        def execute(self, query: Any, args: List[Any] = None) -> None:
+            if "insert into workers (tag, name)" in query:
+                assert args == [mock_env["DAPR_APP_ID"], mock_env["SERVICE_ID"]]
                 checks["worker_created"] = True
-            elif "insert into worker_connections" in query:
-                assert args == [worker_id, mock_env["TASK_DISTRIBUTOR_ID"]]
-                checks["worker_registered"] = True
+            elif "select value from configuration" in query:
+                checks["config_retrieved"] = True
+                self.last_request = "config"
             elif "fail_task" in query:
                 # task_id is passed as 0
                 checks[args[0]] = True
@@ -94,8 +95,9 @@ def test_create(mocker: MockerFixture) -> None:
                 checks[task_ids["ok"]] = True
 
         def fetchone(self):
-            if self.last_request == "register":
-                return (worker_id, None)
+            if self.last_request == "config":
+                self.last_request = None
+                return (str(heartbeat))
             return (mock_args, mock_meta)
 
         def close(self) -> None:
@@ -117,7 +119,7 @@ def test_create(mocker: MockerFixture) -> None:
 
     def mocked_request(endpoint: str, json: Dict[str, str]) -> None:
         assert endpoint == "http://localhost:{}/v1.0/publish/{}/pending".format(
-            mock_env["DAPR_HTTP_PORT"], mock_env["PUB_SUB"]
+            mock_env["DAPR_HTTP_PORT"], mock_env["SCHEDULER_PUB_SUB"]
         )
         assert json["id"] in task_ids
         checks["published_pending"] = True
