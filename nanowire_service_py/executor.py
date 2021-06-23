@@ -3,6 +3,7 @@ import json
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from pydantic import ValidationError
 import traceback
+import threading
 
 from .utils import RuntimeError
 from .worker import Worker, WorkerSpec
@@ -50,6 +51,9 @@ class Executor:
         # fh.setFormatter(formatter)
         # logger.addHandler(fh)
         return logger
+
+    def heartbeat(self) -> None:
+        threading.Thread(target=self.worker.heartbeat).start()
 
     def handle_request(self, task_id: str) -> int:
         """
