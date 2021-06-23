@@ -23,29 +23,31 @@ class Instance:
             }
         ]
 
-    def register(self) -> Tuple[str, str]:
+    def register(self) -> Tuple[str, int]:
         cur = self.conn.cursor()
         cur.execute(
             """
-            insert into workers (tag)
-            values (%s)
-            on conflict (tag) do update set tag = EXCLUDED.tag
-            returning id, tag
-        """,
-            [self.env.DAPR_APP_ID + self.env.WORKER_SUFFIX],
-        )
-        (_id, tag) = cur.fetchone()
-        cur.execute(
-            """
-            insert into worker_connections (worker_id, task_distributor_id)
+            insert into workers (tag, name)
             values (%s, %s)
-            on conflict do nothing
+            returning id
         """,
-            [_id, self.env.TASK_DISTRIBUTOR_ID],
+            [self.env.DAPR_APP_ID, self.env.SERVICE_ID],
         )
-        self.conn.commit()
+        (worker_id) = cur.fetchone()
         cur.close()
-        return (_id, self.env.TASK_DISTRIBUTOR_ID)
+        cur = self.conn.cursor()
+        cur.execute(
+            "select value from configuration where key = 'heartbeat_interval_s'"
+        )
+        results = cur.fetchone()
+        if results is None or len(results) == 0:
+            raise Exception(
+                'Could not find "heartbeat_interval_s" in configuration'
+            )
+        timeout = int(results[0])
+        cur.close()
+        self.conn.commit()
+        return (worker_id, timeout)
 
     @property
     def log_level(self) -> Union[str, int]:
@@ -56,11 +58,11 @@ class Instance:
             wait_for_port(self.env.DAPR_HTTP_PORT)
 
     def setup(self) -> WorkerSpec:
-        (_id, distributor) = self.register()
+        (worker_id, timeout) = self.register()
         pending_endpoint = "http://localhost:{}/v1.0/publish/{}/pending".format(
-            self.env.DAPR_HTTP_PORT, self.env.PUB_SUB
+            self.env.DAPR_HTTP_PORT, self.env.SCHEDULER_PUB_SUB
         )
-        return (self.conn, _id, distributor, pending_endpoint)
+        return (self.conn, worker_id, timeout, pending_endpoint)
 
 
 __all__ = ["Instance"]
