@@ -98,6 +98,9 @@ def subscription(body: TaskBody, response: Response):
     response.status = status
     # Return empty body so dapr doesn't freak out
     return {}
+
+# Start heartbeat thread
+executor.heartbeat()
 ```
 
 Assuming the filename is `main.py` the server can then be started via `uvicorn main:app`
