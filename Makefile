@@ -133,3 +133,7 @@ clean:
 
 .PHONY: clean
 clean: clean_build clean_docker
+
+.PHONE: changelog
+changelog:
+	git-chglog -o CHANGELOG.md
