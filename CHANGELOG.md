@@ -2,6 +2,16 @@
 ## [Unreleased]
 
 
+<a name="1.0.1"></a>
+## [1.0.1] - 2021-06-24
+### Chore
+- **docs:** update changelog to 1.0.0
+- **project:** version bump 1.0.1
+
+### Fix
+- **tests:** update formatting and fix type missmatch
+
+
 <a name="1.0.0"></a>
 ## [1.0.0] - 2021-06-24
 ### Chore
@@ -121,7 +131,8 @@
 <a name="0.1.0"></a>
 ## 0.1.0 - 2021-06-03
 
-[Unreleased]: https://github.com/SpotlightData/nanowire-service-py/compare/1.0.0...HEAD
+[Unreleased]: https://github.com/SpotlightData/nanowire-service-py/compare/1.0.1...HEAD
+[1.0.1]: https://github.com/SpotlightData/nanowire-service-py/compare/1.0.0...1.0.1
 [1.0.0]: https://github.com/SpotlightData/nanowire-service-py/compare/0.3.3...1.0.0
 [0.3.3]: https://github.com/SpotlightData/nanowire-service-py/compare/0.3.2...0.3.3
 [0.3.2]: https://github.com/SpotlightData/nanowire-service-py/compare/0.3.1...0.3.2
