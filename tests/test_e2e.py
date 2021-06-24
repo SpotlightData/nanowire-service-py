@@ -19,7 +19,7 @@ mock_env = {
     "POSTGRES_URL": "mock-url",
     "POSTGRES_SCHEMA": "mock-schema",
     "SCHEDULER_PUB_SUB": "mocked-sub",
-    "SERVICE_ID": service_id
+    "SERVICE_ID": service_id,
 }
 
 
@@ -81,7 +81,7 @@ def test_create(mocker: MockerFixture) -> None:
         def __init__(self) -> None:
             self.last_request = None
 
-        def execute(self, query: Any, args: List[Any] = None) -> None:
+        def execute(self, query: Any, args: List[Any] = []) -> None:
             if "insert into workers (tag, name)" in query:
                 assert args == [mock_env["DAPR_APP_ID"], mock_env["SERVICE_ID"]]
                 checks["worker_created"] = True
@@ -97,7 +97,7 @@ def test_create(mocker: MockerFixture) -> None:
         def fetchone(self):
             if self.last_request == "config":
                 self.last_request = None
-                return (str(heartbeat))
+                return str(heartbeat)
             return (mock_args, mock_meta)
 
         def close(self) -> None:
