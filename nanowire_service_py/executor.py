@@ -53,7 +53,9 @@ class Executor:
         return logger
 
     def heartbeat(self) -> None:
-        threading.Thread(target=self.worker.heartbeat).start()
+        th = threading.Thread(target=self.worker.heartbeat)
+        th.daemon = True
+        th.start()
 
     def handle_request(self, task_id: str) -> int:
         """
