@@ -1,6 +1,12 @@
 import json
 from typing import Any, Dict, Optional, Tuple, TypeVar, Generic, Union
 from time import time, sleep
+from pydantic import BaseModel
+
+class Workflow(BaseModel):
+    id: str
+    name: str
+
 
 class Worker:
     worker_id: str
@@ -96,7 +102,7 @@ class Worker:
         self.conn.commit()
         cur.close()
 
-    def create_workflow_instance(workflow_uuid: str, path_uuid: str, parent: Optional[str] = None):
+    def create_workflow_instance(self, workflow_uuid: str, path_uuid: str, parent: Optional[str] = None):
         cur = self.conn.cursor()
         cur.execute("""
             select create_workflow_instance(%s::uuid, %s::uuid, %s)
@@ -105,6 +111,7 @@ class Worker:
         cur.close()
 
     def create_workflow_tasks(
+        self,
         path_uuid: str,
         max_attemps: int,
         args: Dict[str, Any],
@@ -132,5 +139,22 @@ class Worker:
         ])
         self.conn.commit()
         cur.close()
+
+    def workflows(self):
+        cur = self.conn.cursor()
+        cur.execute("select id, name from workflows")
+        results = [Workflow(id=row[0], name=row[1]) for row in cur.fetchall()]
+        cur.close()
+        return results
+
+    def create_path(self, path_uuid: str, instance_uuid: str, workflow_uuid: str, meta: Dict[str, Any]):
+        cur = self.conn.cursor()
+        cur.execute("""
+            insert into paths (path_uuid, instance_uuid, workflow_uuid, meta)
+            values (%s, %s, %s, %s::jsonb);
+        """, [path_uuid, instance_uuid, workflow_uuid, json.dumps(meta)])
+        self.conn.commit()
+        cur.close()
+
 
 __all__ = ["Worker"]
