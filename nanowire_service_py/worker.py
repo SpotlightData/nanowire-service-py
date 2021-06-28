@@ -1,39 +1,15 @@
 import json
 from typing import Any, Dict, Optional, Tuple, TypeVar, Generic
 from time import time, sleep
-from .collection import UsageCollection
-import requests
-
-# (Postgres conn, worker_id, heartbeat_timeout, pending_endpoint)
-WorkerSpec = Tuple[Any, str, int, str]
-
 
 class Worker:
     worker_id: str
     heartbeat_timeout: int
-    pending_endpoint: str
-    collection: UsageCollection
-    started: float
 
-    def __init__(self, spec: WorkerSpec) -> None:
-        (conn, worker_id, heartbeat_timeout, pending_endpoint) = spec
+    def __init__(self, conn: Any, worker_id: str, heartbeat_timeout: int) -> None:
         self.conn = conn
         self.worker_id = worker_id
         self.heartbeat_timeout = heartbeat_timeout
-        self.pending_endpoint = pending_endpoint
-        self.collection = UsageCollection()
-        self.started = time()
-
-    def start_tracking(self) -> None:
-        self.collection.start_collection()
-        self.started = time()
-
-    def stop_tracking(self) -> None:
-        """
-        Should only be used when handling failure.
-        Otherwise finish() method should be used
-        """
-        self.collection.finish_collection()
 
     def finish(
         self, task_id: str, result: Dict[str, Any], meta: Dict[str, Any]
@@ -88,7 +64,6 @@ class Worker:
         cur = self.task_done("finish", task_id, result, meta)
         self.conn.commit()
         cur.close()
-        requests.post(self.pending_endpoint, json={"id": task_id})
 
     def fail_task(
         self, task_id: str, result: Dict[str, Any], meta: Dict[str, Any]
@@ -113,4 +88,4 @@ class Worker:
         self.heartbeat()
 
 
-__all__ = ["WorkerSpec", "Worker"]
+__all__ = ["Worker"]
