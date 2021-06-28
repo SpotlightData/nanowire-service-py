@@ -116,6 +116,10 @@ If at any point you want the current task to fail, raise `RuntimeError`. This wi
 
 Anything else, that raises unexpected exception should be retried automatically.
 
+## Versioning
+
+Versioning is based on [semver](https://semver.org/), however, it primarily applies to the `create` function exposed by the package.
+If you're using any of the internal system parts, make sure to validate before updating the version.
 
 ## Contributing
 
