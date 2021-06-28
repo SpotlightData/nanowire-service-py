@@ -11,7 +11,7 @@ from .handler import *
 
 
 def create(
-    env: Dict[str, str], make_handler: Callable[[Logger], BaseHandler]
+    env: Dict[str, str], make_handler: HandlerFactory
 ) -> Executor:
     # Always handled by the library, pass environment directly
     instance = Instance(Environment(**env))

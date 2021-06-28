@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, Optional, Tuple, TypeVar, Generic
+from typing import Any, Dict, Optional, Tuple, TypeVar, Generic, Union
 from time import time, sleep
 
 class Worker:
@@ -87,5 +87,50 @@ class Worker:
         sleep(self.heartbeat_timeout)
         self.heartbeat()
 
+    # Advanced usage
+    def branch(path_uuid: str, parent_path_uuid: str, meta: Dict[str, Any] = None):
+        cur = self.conn.cursor()
+        cur.execute("""
+            select branch_path(%s::uuid, %s::uuid, %s, %s::jsonb)
+        """, [path_uuid, parent_path_uuid, self.worker_id, meta if meta else None])
+        self.conn.commit()
+        cur.close()
+
+    def create_workflow_instance(workflow_uuid: str, path_uuid: str, parent: Optional[str] = None):
+        cur = self.conn.cursor()
+        cur.execute("""
+            select create_workflow_instance(%s::uuid, %s::uuid, %s)
+        """, [workflow_uuid, path_uuid, parent])
+        self.conn.commit()
+        cur.close()
+
+    def create_workflow_tasks(
+        path_uuid: str,
+        max_attemps: int,
+        args: Dict[str, Any],
+        meta: Dict[str, Any],
+        parent: Optional[str] = None,
+        child_id: Optional[str] = None
+    ):
+        cur = self.conn.cursor()
+        cur.execute("""
+            select create_workflow_tasks(
+                %s::uuid,
+                %s::int,
+                %s::jsonb,
+                %s::jsonb,
+                %s,
+                %s
+            )
+        """, [
+            path_uuid,
+            max_attemps,
+            json.dumps(args),
+            json.dumps(meta),
+            parent,
+            child_id
+        ])
+        self.conn.commit()
+        cur.close()
 
 __all__ = ["Worker"]

@@ -10,7 +10,7 @@ from pydantic import ValidationError
 
 from .utils import RuntimeError
 from .worker import Worker
-from .handler import BaseHandler
+from .handler import BaseHandler, HandlerFactory
 from .collection import UsageCollection
 from .instance import Instance
 
@@ -28,7 +28,7 @@ class Executor:
 
     def __init__(
         self,
-        make_handler: Callable[[logging.Logger], BaseHandler],
+        make_handler: HandlerFactory,
         instance: Instance,
         logger: Optional[logging.Logger] = None,
     ) -> None:
@@ -42,7 +42,7 @@ class Executor:
             self.logger = logger
         else:
             self.logger = self.configure_logging(instance.log_level)
-        self.handler = make_handler(self.logger)
+        self.handler = make_handler(self.logger, self.worker)
         # Resource tracking
         self.collection = UsageCollection()
         self.started = time()
