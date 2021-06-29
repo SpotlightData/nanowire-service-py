@@ -10,8 +10,11 @@ class Environment(BaseModel):
     PUB_SUB: str
     # Where /pending requests get made
     SCHEDULER_PUB_SUB: str
+    # Dapr related properties
     # Whether we should wait for DAPR server to be active before loading
     NO_WAIT: bool = False
+    NO_PUBLISH: bool = False
+
     LOG_LEVEL: Union[str, int] = "DEBUG"
     # Postgres connection details
     POSTGRES_URL: str
