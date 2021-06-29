@@ -96,7 +96,7 @@ class Worker:
         self.heartbeat()
 
     # Advanced usage
-    def branch(path_uuid: str, parent_path_uuid: str, meta: Dict[str, Any] = None):
+    def branch(self, path_uuid: str, parent_path_uuid: str, meta: Dict[str, Any] = None):
         cur = self.conn.cursor()
         cur.execute("""
             select branch_path(%s::uuid, %s::uuid, %s, %s::jsonb)
