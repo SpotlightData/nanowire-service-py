@@ -14,7 +14,8 @@ def create(
     env: Dict[str, str], make_handler: HandlerFactory
 ) -> Executor:
     # Always handled by the library, pass environment directly
-    instance = Instance(Environment(**env))
+    env = Environment(**env)
+    instance = Instance(env)
     instance.wait_for_dapr()
     # Inherit worker specifications and logs from instance
-    return Executor(make_handler, instance)
+    return Executor(not env.NO_PUBLISH, make_handler, instance)

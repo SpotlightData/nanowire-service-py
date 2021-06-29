@@ -25,13 +25,17 @@ class Executor:
     collection: UsageCollection
     started: float
     pending_endpoint: str
+    should_publish: bool
 
     def __init__(
         self,
+        should_publish: bool,
         make_handler: HandlerFactory,
         instance: Instance,
         logger: Optional[logging.Logger] = None,
     ) -> None:
+        self.should_publish = should_publish
+
         (conn, worker_id, heartbeat_timeout, pending_endpoint) = instance.setup()
         # Worker details
         self.pending_endpoint = pending_endpoint
@@ -46,6 +50,7 @@ class Executor:
         # Resource tracking
         self.collection = UsageCollection()
         self.started = time()
+        
 
     def start_tracking(self) -> None:
         self.collection.start_collection()
@@ -112,13 +117,17 @@ class Executor:
                 },
                 meta,
             )
-            # Publish for rest of workflow to
-            requests.post(self.pending_endpoint, json={"id": task_id})
             
             self.logger.debug("Task finished [%s]", task_id)
-            self.logger.debug(
-                "Published pending to %s", self.pending_endpoint
-            )
+            # Publish for rest of workflow to
+            if self.should_publish:
+                requests.post(self.pending_endpoint, json={"id": task_id})
+                self.logger.debug(
+                    "Published pending to %s", self.pending_endpoint
+                )
+            else:
+                self.logger.debug("Skipping publishing")
+
             return 200
         except ValidationError as e:
             self.logger.warning("Failed to validate arguments: %s", repr(e))
