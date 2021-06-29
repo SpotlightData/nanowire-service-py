@@ -97,6 +97,7 @@ class Executor:
         try:
             self.logger.debug("Received task from database [%s]", task_id)
             args = self.handler.validate_args(args, task_id)
+            meta = self.handler.validate_meta(meta, task_id)
             (result, meta) = self.handler.handle_body(args, meta, task_id)
             # Finish the task
             [max_mem, max_cpu] = self.collection.finish_collection()

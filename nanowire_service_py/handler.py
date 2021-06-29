@@ -16,6 +16,9 @@ class BaseHandler:
     def validate_args(self, args: Any, task_id: str) -> Any:
         raise TypeError("Implement validate_args on Handler class")
 
+    def validate_meta(self, meta: Any, task_id: str) -> Any:
+        return meta
+
     def handle_body(
         self, args: Any, meta: Any, task_id: str
     ) -> Tuple[Dict[str, Any], Any]:
