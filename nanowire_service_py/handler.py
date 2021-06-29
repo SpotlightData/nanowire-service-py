@@ -8,7 +8,7 @@ class BaseHandler:
     logger: Logger
     worker: Worker
 
-    def __init__(self, logger: Logger, worker: Worker) -> None:
+    def __init__(self, logger: Logger, worker: Worker = None) -> None:
         self.logger = logger
         # For advanced usage, when we need direct access
         self.worker = Worker
