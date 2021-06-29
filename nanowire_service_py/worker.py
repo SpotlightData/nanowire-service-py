@@ -96,15 +96,25 @@ class Worker:
         self.heartbeat()
 
     # Advanced usage
-    def branch(self, path_uuid: str, parent_path_uuid: str, meta: Dict[str, Any] = None):
+    def plugin_instance(self, task_id: str) -> int:
+        with self.conn.cursor() as cur:
+            cur.execute("""
+                select pi.plugin_instance_id
+                from active_queue as aq
+                join path_instances pi on aq.instance_uuid = pi.uuid
+                where aq.id = %s;
+            """, [task_id])
+            return cur.fetchone()[0]
+
+    def branch(self, path_uuid: str, parent_path_uuid: str, parent_id: int, meta: Dict[str, Any] = None):
         cur = self.conn.cursor()
         cur.execute("""
             select branch_path(%s::uuid, %s::uuid, %s, %s::jsonb)
-        """, [path_uuid, parent_path_uuid, self.worker_id, meta if meta else None])
+        """, [path_uuid, parent_path_uuid, parent_id, meta if meta else None])
         self.conn.commit()
         cur.close()
 
-    def create_workflow_instance(self, workflow_uuid: str, path_uuid: str, parent: Optional[str] = None):
+    def create_workflow_instance(self, workflow_uuid: str, path_uuid: str, parent: Optional[int] = None):
         cur = self.conn.cursor()
         cur.execute("""
             select create_workflow_instance(%s::uuid, %s::uuid, %s)
@@ -118,8 +128,8 @@ class Worker:
         max_attemps: int,
         args: Dict[str, Any],
         meta: Dict[str, Any],
-        parent: Optional[str] = None,
-        child_id: Optional[str] = None
+        parent: Optional[int] = None,
+        child_id: Optional[int] = None
     ):
         cur = self.conn.cursor()
         cur.execute("""
