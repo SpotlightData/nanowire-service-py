@@ -3,6 +3,8 @@ from typing import Any, Dict, Optional, Tuple, TypeVar, Generic, Union
 from time import time, sleep
 from pydantic import BaseModel
 
+from .utils import RuntimeError
+
 class Workflow(BaseModel):
     id: str
     name: str
@@ -156,5 +158,19 @@ class Worker:
         self.conn.commit()
         cur.close()
 
+    def path_uuid(self, task_id: str):
+        with self.conn.cursor() as cur:
+            rows = cur.execute("""
+                select path_uuid
+                from active_queue aq
+                join path_instances pi
+                    on pi.uuid = sq.instance_uuid
+                where aq.id = %s
+                limit 1
+            """, [task_id]).fetchone()
+            if rows is None:
+                raise RuntimeError("Could not find path for the task", { "task_id": task_id })
+            return rows[0]
+        
 
 __all__ = ["Worker"]
