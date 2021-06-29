@@ -55,7 +55,7 @@ class Instance:
         if not self.env.NO_WAIT:
             wait_for_port(self.env.DAPR_HTTP_PORT)
 
-    def setup(self) -> [Any, str, int, str]:
+    def setup(self) -> Tuple[Any, str, int, str]:
         (worker_id, timeout) = self.register()
         pending_endpoint = "http://localhost:{}/v1.0/publish/{}/pending".format(
             self.env.DAPR_HTTP_PORT, self.env.SCHEDULER_PUB_SUB
