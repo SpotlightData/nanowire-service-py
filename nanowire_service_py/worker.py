@@ -1,13 +1,22 @@
 import json
-from typing import Any, Dict, Optional, Tuple, TypeVar, Generic, Union
+from typing import Any, Dict, Optional, Tuple, TypeVar, Generic, Union, List
 from time import time, sleep
-from pydantic import BaseModel
+from pydantic import BaseModel, Json
 
 from .utils import RuntimeError
 
 class Workflow(BaseModel):
     id: str
     name: str
+
+class Path(BaseModel):
+    path_uuid: str
+    instance_uuid: str
+    parent_uuid: Optional[str]
+    meta: Optional[Any]
+    finished: Optional[str]
+    branched: bool
+    workflow_uuid: str
 
 
 class Worker:
@@ -181,6 +190,67 @@ class Worker:
             if rows is None:
                 raise RuntimeError("Could not find path for the task", { "task_id": task_id })
             return rows[0]
+
+    def path_uuid(self, task_id: str):
+        with self.conn.cursor() as cur:
+            rows = cur.execute("""
+                select path_uuid
+                from active_queue aq
+                join path_instances pi
+                    on pi.uuid = sq.instance_uuid
+                where aq.id = %s
+                limit 1
+            """, [task_id]).fetchone()
+            if rows is None:
+                raise RuntimeError("Could not find path for the task", { "task_id": task_id })
+            return rows[0]
+
+    def query(self, query: str, args: List[Any]) -> Any:
+        with self.conn.cursor() as cur:
+            cur.execute(query, args)
+            rows = cur.fetchall()
+            cols = [column[0] for column in cur.description]
+            return [{cols[i]: col for i, col in enumerate(row)} for row in rows]
+
+    def path(self, path_uuid = None, task_id = None, with_parent = False) -> Tuple[Path, Optional[Path]]:
+        if not path_uuid and not task_id:
+            raise TypeError("Expected either path_uuid or task_id to be provided")
+
+        path = None
+        parent = None
+        cols = {}
+        if task_id:
+            cols = self.query("""
+                select p.*
+                from active_queue aq
+                join path_instances pi
+                    on pi.uuid = aq.instance_uuid
+                join paths p
+                    on p.path_uuid = pi.path_uuid
+                where aq.id = %s
+                limit 1
+            """, [task_id])[0]
+        else:
+            cols = self.query("""
+                select *
+                from paths
+                where path_uuid = %s
+                limit 1
+            """, [path_uuid])[0]
+        # END
+        path = Path(**cols)
+
+        if with_parent:
+            cols = self.query("""
+                select *
+                from paths
+                where path_uuid = %s
+                limit 1
+            """, [path.parent_uuid])[0]
+            parent = Path(**cols)
+
+        return (path, parent)
+
         
 
 __all__ = ["Worker"]
