@@ -11,7 +11,7 @@ class BaseHandler:
     def __init__(self, logger: Logger, worker: Worker = None) -> None:
         self.logger = logger
         # For advanced usage, when we need direct access
-        self.worker = Worker
+        self.worker = worker
 
     def validate_args(self, args: Any, task_id: str) -> Any:
         raise TypeError("Implement validate_args on Handler class")
