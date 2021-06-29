@@ -95,7 +95,7 @@ def subscribe():
 @app.post("/subscription")
 def subscription(body: TaskBody, response: Response):
     status = executor.handle_request(body.data.id)
-    response.status = status
+    response.status_code = status
     # Return empty body so dapr doesn't freak out
     return {}
 
