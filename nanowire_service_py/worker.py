@@ -32,22 +32,6 @@ class Worker:
         self.worker_id = worker_id
         self.heartbeat_timeout = heartbeat_timeout
 
-    def finish(
-        self, task_id: str, result: Dict[str, Any], meta: Dict[str, Any]
-    ) -> None:
-        [max_mem, max_cpu] = self.collection.finish_collection()
-        time_taken = round(time() - self.started, 2)
-        self.finish_task(
-            task_id,
-            {
-                **result,
-                "max_cpu": max_cpu,
-                "max_mem": max_mem,
-                "time_taken": time_taken,
-            },
-            meta,
-        )
-
     # Allow user to cast it on their end
     def get_task(self, task_id: str) -> Optional[Tuple[Any, Any]]:
         cur = self.conn.cursor()
@@ -120,15 +104,16 @@ class Worker:
             """,
                 [task_id],
             )
-            return cur.fetchone()[0]
+            instance: int = cur.fetchone()[0]
+            return instance
 
     def branch(
         self,
         path_uuid: str,
         parent_path_uuid: str,
         parent_id: int,
-        meta: Dict[str, Any] = None,
-    ):
+        meta: Optional[Dict[str, Any]] = None,
+    ) -> None:
         cur = self.conn.cursor()
         cur.execute(
             """
@@ -141,7 +126,7 @@ class Worker:
 
     def create_workflow_instance(
         self, workflow_uuid: str, path_uuid: str, parent: Optional[int] = None
-    ):
+    ) -> None:
         cur = self.conn.cursor()
         cur.execute(
             """
@@ -160,7 +145,7 @@ class Worker:
         meta: Dict[str, Any],
         parent: Optional[int] = None,
         child_id: Optional[int] = None,
-    ):
+    ) -> None:
         cur = self.conn.cursor()
         cur.execute(
             """
@@ -185,7 +170,7 @@ class Worker:
         self.conn.commit()
         cur.close()
 
-    def workflows(self):
+    def workflows(self) -> List[Workflow]:
         cur = self.conn.cursor()
         cur.execute("select id, name from workflows")
         results = [Workflow(id=row[0], name=row[1]) for row in cur.fetchall()]
@@ -198,7 +183,7 @@ class Worker:
         instance_uuid: str,
         workflow_uuid: str,
         meta: Dict[str, Any],
-    ):
+    ) -> None:
         cur = self.conn.cursor()
         cur.execute(
             """
@@ -210,7 +195,7 @@ class Worker:
         self.conn.commit()
         cur.close()
 
-    def path_uuid(self, task_id: str):
+    def path_uuid(self, task_id: str) -> str:
         with self.conn.cursor() as cur:
             rows = cur.execute(
                 """
@@ -227,26 +212,7 @@ class Worker:
                 raise RuntimeError(
                     "Could not find path for the task", {"task_id": task_id}
                 )
-            return rows[0]
-
-    def path_uuid(self, task_id: str):
-        with self.conn.cursor() as cur:
-            rows = cur.execute(
-                """
-                select path_uuid
-                from active_queue aq
-                join path_instances pi
-                    on pi.uuid = sq.instance_uuid
-                where aq.id = %s
-                limit 1
-            """,
-                [task_id],
-            ).fetchone()
-            if rows is None:
-                raise RuntimeError(
-                    "Could not find path for the task", {"task_id": task_id}
-                )
-            return rows[0]
+            return str(rows[0])
 
     def query(self, query: str, args: List[Any]) -> Any:
         with self.conn.cursor() as cur:
@@ -256,7 +222,10 @@ class Worker:
             return [{cols[i]: col for i, col in enumerate(row)} for row in rows]
 
     def path(
-        self, path_uuid=None, task_id=None, with_parent=False
+        self,
+        path_uuid: Optional[str] = None,
+        task_id: Optional[str] = None,
+        with_parent: bool = False,
     ) -> Tuple[Path, Optional[Path]]:
         if not path_uuid and not task_id:
             raise TypeError(
