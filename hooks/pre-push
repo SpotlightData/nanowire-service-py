@@ -2,6 +2,7 @@
 import re, sys, os
 import toml
 import subprocess
+import subprocess
 
 result = subprocess.run(['bash', '-c', "grep -Po 'refs/tags/([^ ]*) ' </dev/stdin | head -n1 | cut -c11- | tr -d '[:space:]'"], stdout=subprocess.PIPE)
 version = result.stdout.decode('utf8')
@@ -17,3 +18,10 @@ expected = parsed_toml['tool']['poetry']['version']
 if expected != version:
     print("pyproject.toml defines version as [{}], tag was under [{}]".format(expected, version))
     exit(1)
+
+# Run commands for styling
+result = subprocess.run(["make", "check-style"])
+
+if result.returncode != 0:
+    print("Failed to run codecheks")
+    exit(result.returncode)
