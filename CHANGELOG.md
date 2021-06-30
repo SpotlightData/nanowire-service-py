@@ -1,6 +1,10 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Chore
+- **codestyle:** format code
+- **release:** Update changelog
+
 
 <a name="1.1.0"></a>
 ## [1.1.0] - 2021-06-30
