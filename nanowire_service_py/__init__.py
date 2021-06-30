@@ -10,9 +10,7 @@ from .utils import *
 from .handler import *
 
 
-def create(
-    env: Dict[str, str], make_handler: HandlerFactory
-) -> Executor:
+def create(env: Dict[str, str], make_handler: HandlerFactory) -> Executor:
     # Always handled by the library, pass environment directly
     env = Environment(**env)
     instance = Instance(env)

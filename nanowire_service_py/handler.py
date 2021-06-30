@@ -24,6 +24,7 @@ class BaseHandler:
     ) -> Tuple[Dict[str, Any], Any]:
         raise TypeError("Implement handle_body on Handler class")
 
+
 HandlerFactory = Callable[[Logger, Worker], BaseHandler]
 
 __all__ = ["BaseHandler", "HandlerFactory"]

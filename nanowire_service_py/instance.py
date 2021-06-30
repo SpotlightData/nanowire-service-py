@@ -3,6 +3,7 @@ import psycopg2
 from .types import Environment
 from .utils import wait_for_port
 
+
 class Instance:
     env: Environment
 

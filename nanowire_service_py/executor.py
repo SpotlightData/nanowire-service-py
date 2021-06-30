@@ -36,7 +36,12 @@ class Executor:
     ) -> None:
         self.should_publish = should_publish
 
-        (conn, worker_id, heartbeat_timeout, pending_endpoint) = instance.setup()
+        (
+            conn,
+            worker_id,
+            heartbeat_timeout,
+            pending_endpoint,
+        ) = instance.setup()
         # Worker details
         self.pending_endpoint = pending_endpoint
         self.worker = Worker(conn, worker_id, heartbeat_timeout)
@@ -50,7 +55,6 @@ class Executor:
         # Resource tracking
         self.collection = UsageCollection()
         self.started = time()
-        
 
     def start_tracking(self) -> None:
         self.collection.start_collection()
@@ -117,7 +121,7 @@ class Executor:
                 },
                 meta,
             )
-            
+
             self.logger.debug("Task finished [%s]", task_id)
             # Publish for rest of workflow to
             if self.should_publish:
