@@ -12,8 +12,8 @@ from .handler import *
 
 def create(env: Dict[str, str], make_handler: HandlerFactory) -> Executor:
     # Always handled by the library, pass environment directly
-    env = Environment(**env)
-    instance = Instance(env)
+    parsed_env = Environment(**env)
+    instance = Instance(parsed_env)
     instance.wait_for_dapr()
     # Inherit worker specifications and logs from instance
-    return Executor(not env.NO_PUBLISH, make_handler, instance)
+    return Executor(not parsed_env.NO_PUBLISH, make_handler, instance)
