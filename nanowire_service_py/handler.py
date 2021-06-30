@@ -1,14 +1,14 @@
 from logging import Logger, log
-from typing import Any, Dict, Tuple, Callable
+from typing import Any, Dict, Tuple, Callable, Optional
 
 from .worker import Worker
 
 
 class BaseHandler:
     logger: Logger
-    worker: Worker
+    worker: Optional[Worker]
 
-    def __init__(self, logger: Logger, worker: Worker = None) -> None:
+    def __init__(self, logger: Logger, worker: Optional[Worker] = None) -> None:
         self.logger = logger
         # For advanced usage, when we need direct access
         self.worker = worker
