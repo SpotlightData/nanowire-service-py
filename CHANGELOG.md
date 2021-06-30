@@ -2,6 +2,35 @@
 ## [Unreleased]
 
 
+<a name="1.1.0"></a>
+## [1.1.0] - 2021-06-30
+### Chore
+- **docs:** update change log to 1.0.1
+- **release:** Bump to 1.1.0 version
+- **version:** bump to 1.0.2
+
+### Docs
+- **readme:** fix incorrect method access
+- **readme:** add a note about versioning impact on code
+
+### Feat
+- **executor:** add optional skip for publishing
+- **executor:** swap action responsibilties to executor - Allows worker to be responsible for SQL queries instead - This means it can be utilised directly
+- **handler:** allow optional worker for times when it's not needed
+- **handler:** pass down worker to handler for advanced use cases.
+- **handler:** allow for metadata to be validated
+- **types:** add optional skip for publishing
+- **worker:** retrieve plugin instances fix(worker): fix incorrect types passed to workflow instance
+- **worker:**  allow to query the path
+- **worker:** path access function
+- **worker:** add more advanced functionality for task creation
+
+### Fix
+- **handler:** incorrect worker assignment
+- **instance:** incorrect return typer
+- **worker:** make branch an instance function
+
+
 <a name="1.0.1"></a>
 ## [1.0.1] - 2021-06-24
 ### Chore
@@ -131,7 +160,8 @@
 <a name="0.1.0"></a>
 ## 0.1.0 - 2021-06-03
 
-[Unreleased]: https://github.com/SpotlightData/nanowire-service-py/compare/1.0.1...HEAD
+[Unreleased]: https://github.com/SpotlightData/nanowire-service-py/compare/1.1.0...HEAD
+[1.1.0]: https://github.com/SpotlightData/nanowire-service-py/compare/1.0.1...1.1.0
 [1.0.1]: https://github.com/SpotlightData/nanowire-service-py/compare/1.0.0...1.0.1
 [1.0.0]: https://github.com/SpotlightData/nanowire-service-py/compare/0.3.3...1.0.0
 [0.3.3]: https://github.com/SpotlightData/nanowire-service-py/compare/0.3.2...0.3.3
