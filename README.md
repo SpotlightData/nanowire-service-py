@@ -18,9 +18,40 @@ Wrapper for interacting with Nanowire platform
 
 ## Usage
 
+Install the library via `pip install nanowire-service-py`, or by adding it to requirements file and running `pip install -r requirements.txt`
+
 This library is designed for tight integration with Nanowire platform (created by Spotlight Data).
 
-The library does not have a hardcode requirement for a specific web server, but I'd recommend using [fastapi](https://fastapi.tiangolo.com/) due to it's simplicity and speed
+The library does not have a hardcode requirement for a specific web server, so a another framework like django or flask could be utilised, however, I'd recommend using [fastapi](https://fastapi.tiangolo.com/) due to it's simplicity and speed
+
+### Environment
+
+The following environment variables need to be supplied:
+
+```python
+class Environment(BaseModel):
+    # Dapr spect
+    DAPR_HTTP_PORT: int
+    DAPR_APP_ID: str
+    PUB_SUB: str
+    # Where /pending requests get made
+    SCHEDULER_PUB_SUB: str
+    # Dapr related properties
+    # Whether we should wait for DAPR server to be active before loading
+    NO_WAIT: bool = False
+    NO_PUBLISH: bool = False
+
+    LOG_LEVEL: Union[str, int] = "DEBUG"
+    # Postgres connection details
+    POSTGRES_URL: str
+    POSTGRES_SCHEMA: str
+    # Utilised for healthchecks and identifying the pod
+    SERVICE_ID: str = str(uuid.uuid4())
+```
+
+This will be verified on service startup.
+
+### Entrypoint
 
 The primary code logic should be placed in a sub-class of `BaseHandler`. User is expected to implement `validate_args` as well as `handle_body` methods:
 
@@ -80,7 +111,7 @@ class MyHandler(BaseHandler):
         result = self.cluster_tool.main(df, args)
         return (result, meta)
 
-# Always handled by the library, pass environment directly 
+# Always handled by the library, pass environment directly
 executor = create(os.environ, MyHandler)
 
 app = FastAPI()
@@ -99,7 +130,7 @@ def subscription(body: TaskBody, response: Response):
     # Return empty body so dapr doesn't freak out
     return {}
 
-# Start heartbeat thread
+# Start heartbeat thread, which will periodically send updates to database
 executor.heartbeat()
 ```
 
@@ -111,10 +142,10 @@ The primary validation happens within `validate_args` function by `pydantic` mod
 
 If at any point you want the current task to fail, raise `RuntimeError`. This will indicate the library, that we should fail and not retry again. For example:
 
-* CSV missing columns or having incorrect text format
-* Not enough data passed
+- CSV missing columns or having incorrect text format
+- Not enough data passed
 
-Anything else, that raises unexpected exception should be retried automatically.
+Anything else that raises unexpected exception should be retried automatically.
 
 ## Versioning
 
@@ -125,13 +156,11 @@ If you're using any of the internal system parts, make sure to validate before u
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md)
 
-
 ## 🛡 License
 
 [![License](https://img.shields.io/github/license/SpotlightData/nanowire-service-py)](https://github.com/SpotlightData/nanowire-service-py/blob/master/LICENSE)
 
 This project is licensed under the terms of the `MIT` license. See [LICENSE](https://github.com/SpotlightData/nanowire-service-py/blob/master/LICENSE) for more details.
-
 
 ## Credits
 
