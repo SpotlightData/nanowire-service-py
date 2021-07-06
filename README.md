@@ -39,6 +39,8 @@ class Environment(BaseModel):
     # Dapr related properties
     # Whether we should wait for DAPR server to be active before loading
     NO_WAIT: bool = False
+    # Whether the service should publish to schduler
+    # This shouldn't be done if we have an "executor" worker
     NO_PUBLISH: bool = False
 
     LOG_LEVEL: Union[str, int] = "DEBUG"
