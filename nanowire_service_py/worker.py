@@ -197,11 +197,14 @@ class Worker:
     def close_path(
         self,
         path_uuid: str,
-        parent_id: int = None,
-        workflow_uuid: str = None
-    ):
+        parent_id: Optional[int] = None,
+        workflow_uuid: Optional[str] = None,
+    ) -> None:
         with self.conn.cursor() as cur:
-            cur.execute("select close_path(%s::uuid, %s::int, %s::uuid)", [path_uuid, parent_id, workflow_uuid])
+            cur.execute(
+                "select close_path(%s::uuid, %s::int, %s::uuid)",
+                [path_uuid, parent_id, workflow_uuid],
+            )
             self.conn.commit()
 
     def path_uuid(self, task_id: str) -> str:
