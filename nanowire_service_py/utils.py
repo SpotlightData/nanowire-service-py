@@ -39,5 +39,8 @@ class RuntimeError(Exception):
         # Now for your custom code...
         self.errors = errors
 
+class RetryError(Exception):
+    pass
 
-__all__ = ["wait_for_port", "RuntimeError"]
+
+__all__ = ["wait_for_port", "RuntimeError", "RetryError"]

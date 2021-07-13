@@ -8,7 +8,7 @@ from time import time, sleep
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from pydantic import ValidationError
 
-from .utils import RuntimeError
+from .utils import RuntimeError, RetryError
 from .worker import Worker
 from .handler import BaseHandler, HandlerFactory
 from .collection import UsageCollection
@@ -144,17 +144,25 @@ class Executor:
             self.logger.warning("Failed via RuntimeError: %s", repr(e))
             self.stop_tracking()
             self.worker.fail_task(
-                task_id, {"exception": repr(e), "errors": e.errors}, org_meta
+                task_id, {"exception": repr(e), "errors": e.errors, "type": "RuntimeError"}, org_meta
             )
             # Return normal response so dapr doesn't retry
             return 200
-        except Exception as e:
-            self.logger.error("Failed via Exception: %s", repr(e))
+        except RetryError as e:
+            self.logger.error("Failed via RetryError: %s", repr(e))
             traceback.print_exc()
             # Unknown exections should cause dapr to retry
             self.stop_tracking()
             self.logger.error(e)
             return 500
+        except Exception as e:
+            self.logger.error("Failed via Exception: %s", repr(e))
+            traceback.print_exc()
+            self.stop_tracking()
+            self.worker.fail_task(
+                task_id, {"exception": repr(e), "type": "Exception" }, org_meta
+            )
+            return 200
 
 
 __all__ = ["Executor"]

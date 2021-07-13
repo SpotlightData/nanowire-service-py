@@ -142,12 +142,12 @@ Assuming the filename is `main.py` the server can then be started via `uvicorn m
 
 The primary validation happens within `validate_args` function by `pydantic` models. This is where anything related to input should be checked.
 
-If at any point you want the current task to fail, raise `RuntimeError`. This will indicate the library, that we should fail and not retry again. For example:
+If at any point you want the current task to fail, raise `RuntimeError` or `Exception`. This will indicate the library, that we should fail and not retry again. For example:
 
 - CSV missing columns or having incorrect text format
 - Not enough data passed
 
-Anything else that raises unexpected exception should be retried automatically.
+Anything else that raises for a retryable error, should be raised via `RetryError`.
 
 ## Versioning
 

@@ -139,7 +139,7 @@ def test_create(mocker: MockerFixture) -> None:
 
     assert executor.handle_request(task_ids["validation"]) == 200
     assert executor.handle_request(task_ids["runtime"]) == 200
-    assert executor.handle_request(task_ids["exception"]) == 500
+    assert executor.handle_request(task_ids["exception"]) == 200
     assert executor.handle_request(task_ids["ok"]) == 200
 
     # executor.handle_request(TASK_ID)
