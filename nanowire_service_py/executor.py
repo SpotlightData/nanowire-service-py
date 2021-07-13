@@ -144,7 +144,13 @@ class Executor:
             self.logger.warning("Failed via RuntimeError: %s", repr(e))
             self.stop_tracking()
             self.worker.fail_task(
-                task_id, {"exception": repr(e), "errors": e.errors, "type": "RuntimeError"}, org_meta
+                task_id,
+                {
+                    "exception": repr(e),
+                    "errors": e.errors,
+                    "type": "RuntimeError",
+                },
+                org_meta,
             )
             # Return normal response so dapr doesn't retry
             return 200
@@ -160,7 +166,7 @@ class Executor:
             traceback.print_exc()
             self.stop_tracking()
             self.worker.fail_task(
-                task_id, {"exception": repr(e), "type": "Exception" }, org_meta
+                task_id, {"exception": repr(e), "type": "Exception"}, org_meta
             )
             return 200
 
