@@ -102,11 +102,11 @@ class Executor:
             self.logger.warning("Task was not found, already processed?")
             return 200
         self.start_tracking()
-        (args, meta) = task
+        (org_args, org_meta) = task
         try:
             self.logger.debug("Received task from database [%s]", task_id)
-            args = self.handler.validate_args(args, task_id)
-            meta = self.handler.validate_meta(meta, task_id)
+            args = self.handler.validate_args(org_args, task_id)
+            meta = self.handler.validate_meta(org_meta, task_id)
             (result, meta) = self.handler.handle_body(args, meta, task_id)
             # Finish the task
             [max_mem, max_cpu] = self.collection.finish_collection()
@@ -137,14 +137,14 @@ class Executor:
             self.logger.warning("Failed to validate arguments: %s", repr(e))
             self.stop_tracking()
             # NOTE: is there a way to extract json without parsing?
-            self.worker.fail_task(task_id, json.loads(e.json()), meta)
+            self.worker.fail_task(task_id, json.loads(e.json()), org_meta)
             # Return normal response so dapr doesn't retry
             return 200
         except RuntimeError as e:
             self.logger.warning("Failed via RuntimeError: %s", repr(e))
             self.stop_tracking()
             self.worker.fail_task(
-                task_id, {"exception": repr(e), "errors": e.errors}, meta
+                task_id, {"exception": repr(e), "errors": e.errors}, org_meta
             )
             # Return normal response so dapr doesn't retry
             return 200
