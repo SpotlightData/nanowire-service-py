@@ -2,6 +2,7 @@ import json
 from typing import Any, Dict, Optional, Tuple, TypeVar, Generic, Union, List
 from time import time, sleep
 from pydantic import BaseModel, Json
+from datetime import datetime
 
 from .utils import RuntimeError
 
@@ -16,7 +17,7 @@ class Path(BaseModel):
     instance_uuid: str
     parent_uuid: Optional[str]
     meta: Optional[Any]
-    finished: Optional[str]
+    finished: Optional[datetime]
     branched: bool
     workflow_uuid: str
 
