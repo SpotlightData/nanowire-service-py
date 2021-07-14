@@ -1,8 +1,66 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="1.2.1"></a>
+## [1.2.1] - 2021-07-14
+### Fix
+- **worker:** incorrect finished path passed
+
+
+<a name="1.2.0"></a>
+## [1.2.0] - 2021-07-13
+### Chore
+- **code:** formatting
+- **version:** bump version
+
+### Feat
+- **executor:** Fail the task on exception instead of retry
+
+
+<a name="1.1.6"></a>
+## [1.1.6] - 2021-07-13
+### Chore
+- **version:** bump to 1.1.6
+
+### Fix
+- **executor:** bug, where custom metadata would be used on crash instead of original data
+
+
+<a name="1.1.5"></a>
+## [1.1.5] - 2021-07-12
+### Chore
+- **project:** Merge branch 'main' of github.com:SpotlightData/nanowire-service-py into main
+- **version:** bump to 1.1.5
+
+### Docs
+- **readme:** update notes on types
+- **readme:** update notes
+
+
+<a name="1.1.4"></a>
+## [1.1.4] - 2021-07-12
+### Chore
+- **version:** bump to 1.1.4
+
+### Fix
+- **worker:** update type definitions
+
+
+<a name="1.1.3"></a>
+## [1.1.3] - 2021-07-12
+### Chore
+- **version:** bump to 1.1.3
+
+### Feat
+- **worker:** allow to close path
+
+
+<a name="1.1.2"></a>
+## [1.1.2] - 2021-06-30
 ### Chore
 - **project:** update hooks to check for codestyles
+- **release:** bump to 1.1.2
 
 ### Fix
 - **handler:** corrent types for class
@@ -175,7 +233,14 @@
 <a name="0.1.0"></a>
 ## 0.1.0 - 2021-06-03
 
-[Unreleased]: https://github.com/SpotlightData/nanowire-service-py/compare/1.1.1...HEAD
+[Unreleased]: https://github.com/SpotlightData/nanowire-service-py/compare/1.2.1...HEAD
+[1.2.1]: https://github.com/SpotlightData/nanowire-service-py/compare/1.2.0...1.2.1
+[1.2.0]: https://github.com/SpotlightData/nanowire-service-py/compare/1.1.6...1.2.0
+[1.1.6]: https://github.com/SpotlightData/nanowire-service-py/compare/1.1.5...1.1.6
+[1.1.5]: https://github.com/SpotlightData/nanowire-service-py/compare/1.1.4...1.1.5
+[1.1.4]: https://github.com/SpotlightData/nanowire-service-py/compare/1.1.3...1.1.4
+[1.1.3]: https://github.com/SpotlightData/nanowire-service-py/compare/1.1.2...1.1.3
+[1.1.2]: https://github.com/SpotlightData/nanowire-service-py/compare/1.1.1...1.1.2
 [1.1.1]: https://github.com/SpotlightData/nanowire-service-py/compare/1.1.0...1.1.1
 [1.1.0]: https://github.com/SpotlightData/nanowire-service-py/compare/1.0.1...1.1.0
 [1.0.1]: https://github.com/SpotlightData/nanowire-service-py/compare/1.0.0...1.0.1
