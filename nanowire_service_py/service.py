@@ -44,17 +44,17 @@ class ServiceClient:
     def __init__(  # type: ignore
         self,
         env: Any,
-        run: Callable[[Any, StageProfiler, Any], TaskOutput],
         logger=logger,
     ):
         self.client = DaprClient()
         self.env = Environment(**env)
-        # mypy seems to freak out with types here for some reason
-        self.run = run
+
         self.route = "/receive"
         self.log = logger
         self.failed = "failed"
         self.finished = "finished"
+
+        self.configure()
 
     def subscriptions(self):
         return [
@@ -65,6 +65,13 @@ class ServiceClient:
             }
         ]
 
+    # Any custom behaviour that the service might need
+    def configure(self) -> None:
+        pass
+
+    def execute(self, task: Any, profiler: StageProfiler) -> TaskOutput:
+        raise Exception("Please define execute method")
+
     def handle_request(self, body):
         uuid = path(["uuid"], body)
         self.log.debug(f"[{uuid}] Task received")
@@ -74,7 +81,7 @@ class ServiceClient:
             # TODO: if body is an url, should try and retrieve it
             # before passing down for validation
             profiler = StageProfiler()
-            plugin_result = self.run(body, profiler, self.log)
+            plugin_result = self.execute(body, profiler)
             if not isinstance(plugin_result, PluginOutput):
                 raise Exception(
                     "Received invalid task output. Expected PluginOutput, received: {}".format(
