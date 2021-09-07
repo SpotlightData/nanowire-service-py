@@ -1,19 +1,15 @@
+# type: ignore[attr-defined]
 """Wrapper for interacting with Nanowire platform"""
-from typing import Callable, Dict
-from logging import Logger
-
-from .executor import Executor
 from .types import *
-from .worker import *
-from .instance import *
+from .service import *
 from .utils import *
-from .handler import *
 
+try:
+    from importlib.metadata import PackageNotFoundError, version
+except ImportError:  # pragma: no cover
+    from importlib_metadata import PackageNotFoundError, version
 
-def create(env: Dict[str, str], make_handler: HandlerFactory) -> Executor:
-    # Always handled by the library, pass environment directly
-    parsed_env = Environment(**env)
-    instance = Instance(parsed_env)
-    instance.wait_for_dapr()
-    # Inherit worker specifications and logs from instance
-    return Executor(not parsed_env.NO_PUBLISH, make_handler, instance)
+try:
+    __version__ = version(__name__)
+except PackageNotFoundError:  # pragma: no cover
+    __version__ = "unknown"
