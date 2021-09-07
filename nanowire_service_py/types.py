@@ -1,5 +1,4 @@
-# pyre-ignore-all-errors[13]
-from typing import Any, Dict, Optional, List, Literal  # type:ignore
+from typing import Any, Dict, Optional, List, Literal
 from pydantic import BaseModel, ValidationError
 
 

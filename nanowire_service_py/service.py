@@ -2,15 +2,15 @@ from typing import Any, Dict, Callable, List
 import json, traceback, sys
 
 from pydantic import BaseModel, ValidationError
-from dapr.clients import DaprClient  # type:ignore
+from dapr.clients import DaprClient
 from loguru import logger
 from .utils import safe_dump, now, path
 from .types import ChildAction, Environment, Task, TaskOutput, PluginOutput
 
 
-def children_actions(task: Task,
-                     args: Dict[str, Any],
-                     meta: Dict[str, Any] = {}) -> List[ChildAction]:
+def children_actions(
+    task: Task, args: Dict[str, Any], meta: Dict[str, Any] = {}
+) -> List[ChildAction]:
     if task.children is None:
         return []
     return [
@@ -18,15 +18,10 @@ def children_actions(task: Task,
             parent=task.current.id,
             child=c.id,
             plugin=c.plugin,
-            args={
-                **c.default_args,
-                **args
-            },
-            meta={
-                **c.meta,
-                **meta
-            },
-        ) for c in task.children
+            args={**c.default_args, **args},
+            meta={**c.meta, **meta},
+        )
+        for c in task.children
     ]
 
 
@@ -55,18 +50,20 @@ class ServiceClient:
         self.client = DaprClient()
         self.env = Environment(**env)
         # mypy seems to freak out with types here for some reason
-        self.run = run  # type: ignore
+        self.run = run
         self.route = "/receive"
         self.log = logger
         self.failed = "failed"
         self.finished = "finished"
 
     def subscriptions(self):
-        return [{
-            "topic": self.env.DAPR_APP_ID,
-            "route": self.route,
-            "pubsubname": self.env.PUB_SUB,
-        }]
+        return [
+            {
+                "topic": self.env.DAPR_APP_ID,
+                "route": self.route,
+                "pubsubname": self.env.PUB_SUB,
+            }
+        ]
 
     def handle_request(self, body):
         uuid = path(["uuid"], body)
@@ -80,11 +77,12 @@ class ServiceClient:
             plugin_result = self.run(body, profiler, self.log)
             if not isinstance(plugin_result, PluginOutput):
                 raise Exception(
-                    "Received invalid task output. Expected PluginOutput, received: {}"
-                    .format(repr(plugin_result)))
+                    "Received invalid task output. Expected PluginOutput, received: {}".format(
+                        repr(plugin_result)
+                    )
+                )
             finished = now()
-            self.log.debug("[{uuid}] Task finished, publishing",
-                           uuid=task.uuid)
+            self.log.debug("[{uuid}] Task finished, publishing", uuid=task.uuid)
             result = TaskOutput(
                 uuid=task.uuid,
                 started=started,
