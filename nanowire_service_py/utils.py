@@ -1,36 +1,33 @@
-import time
-import socket
-import io
-import requests
-from contextlib import contextmanager
-from typing import Any
+import json
+from datetime import datetime, timezone
 
-def wait_for_port(port: int, host: str ='localhost', wait_time: float=1.0, timeout: float=20.0) -> None:
-    """Wait until a port starts accepting TCP connections.
-    Args:
-        port (int): Port number.
-        host (str): Host address on which the port should exist.
-        timeout (float): In seconds. How long to wait before raising errors.
-    Raises:
-        TimeoutError: The port isn't accepting connection after time specified in `timeout`.
-    """
-    start_time = time.perf_counter()
-    while True:
-        try:
-            with socket.create_connection((host, port), timeout=timeout):
-                break
-        except OSError as ex:
-            time.sleep(wait_time)
-            if time.perf_counter() - start_time >= timeout:
-                raise TimeoutError('Waited too long for the port {} on host {} to start accepting '
-                                   'connections.'.format(port, host)) from ex
 
-class RuntimeError(Exception):
-    errors: Any
+def find(xs, f):
+    for x in xs:
+        if f(x):
+            return x
+    return None
 
-    def __init__(self, message, errors):
-        super().__init__(message)
-        # Now for your custom code...
-        self.errors = errors
 
-__all__ = ["wait_for_port", "RuntimeError"]
+def path(path, obj):
+    value = obj
+    for part in path:
+        if part in value:
+            value = value[part]
+        else:
+            return None
+    return value
+
+
+# Handles datetime better
+def safe_json(o):
+    if isinstance(o, datetime):
+        return o.__str__()
+
+
+def safe_dump(d):
+    return json.dumps(d, default=safe_json)
+
+
+def now():
+    return datetime.now(timezone.utc).isoformat()
