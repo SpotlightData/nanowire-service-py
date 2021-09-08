@@ -18,8 +18,8 @@ def children_actions(
             parent=task.current.id,
             child=c.id,
             plugin=c.plugin,
-            args={**c.default_args, **args},
-            meta={**c.meta, **meta},
+            args=args,
+            meta=meta,
         )
         for c in task.children
     ]
