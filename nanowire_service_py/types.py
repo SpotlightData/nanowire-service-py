@@ -96,6 +96,6 @@ class GroupedInput(BaseModel):
     meta: Any
 
 
-class ClassifierTask(Task):
+class MultiInputTask(Task):
     args: Dict[str, MultiInput]
     meta: Dict[str, MultiInput]
