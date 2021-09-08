@@ -82,3 +82,20 @@ class Environment(BaseModel):
     # Where /finished|failed requests get made
     OUTPUT_PUB_SUB: str
     PYTHON_ENV: Literal["production", "development"] = "production"
+
+
+class MultiInput(BaseModel):
+    id: int
+    plugin: str
+    value: Any
+
+
+class GroupedInput(BaseModel):
+    plugin: str
+    args: Any
+    meta: Any
+
+
+class ClassifierTask(Task):
+    args: Dict[str, MultiInput]
+    meta: Dict[str, MultiInput]
