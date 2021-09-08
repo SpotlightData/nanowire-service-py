@@ -47,6 +47,7 @@ class ServiceClient:
         logger=logger,
     ):
         self.client = DaprClient()
+        self.raw_env = env
         self.env = Environment(**env)
 
         self.route = "/receive"
@@ -143,9 +144,3 @@ class ServiceClient:
             data_content_type="application/json",
             data=safe_dump(data),
         )
-
-
-class MockClient(ServiceClient):
-    def publish(self, topic: str, data: Dict[str, Any]) -> None:
-        if self.env.PYTHON_ENV == "production":
-            raise Exception("Do not use MockClient in production")
