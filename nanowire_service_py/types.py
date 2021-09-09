@@ -72,7 +72,6 @@ class TaskOutput(PluginOutput):
     uuid: str
     started: str
     finished: str
-    profiling: Dict[str, str]
     plugin_id: int
 
 

@@ -1,38 +1,24 @@
-from typing import Any, Dict, Callable, List
+from typing import Any, Dict
 import json, traceback, sys
 
 from pydantic import BaseModel, ValidationError
 from dapr.clients import DaprClient
-from loguru import logger
+
 from .utils import safe_dump, now, path
 from .types import ChildAction, Environment, Task, TaskOutput, PluginOutput
+from .logger import Logger
 
 
-def children_actions(
-    task: Task, args: Dict[str, Any], meta: Dict[str, Any] = {}
-) -> List[ChildAction]:
-    if task.children is None:
-        return []
-    return [
-        ChildAction(
-            parent=task.current.id,
-            child=c.id,
-            plugin=c.plugin,
-            args=args,
-            meta=meta,
-        )
-        for c in task.children
-    ]
+class Worker:
+    logger: Logger
 
+    def __init__(self, logger: Logger):
+        if not isinstance(logger, Logger):
+            raise Exception("Expected a valid nanowire logger")
+        self.logger = logger
 
-class StageProfiler:
-    entries: Dict[str, str]
-
-    def __init__(self):
-        self.entries = {}
-
-    def mark(self, tag):
-        self.entries[tag] = now()
+    def execute(self, task: Any) -> TaskOutput:
+        raise Exception("Please define execute method")
 
 
 class ServiceClient:
@@ -40,22 +26,20 @@ class ServiceClient:
     route: str
     failed: str
     finished: str
+    logger: Logger
+    worker: Worker
 
-    def __init__(  # type: ignore
-        self,
-        env: Any,
-        logger=logger,
-    ):
+    def __init__(self, env: Any, logger: Logger, worker: Worker):  # type: ignore
         self.client = DaprClient()
         self.raw_env = env
         self.env = Environment(**env)
+        self.worker = worker
 
         self.route = "/receive"
         self.log = logger
         self.failed = "failed"
         self.finished = "finished"
-
-        self.configure()
+        self.logs = "logs"
 
     def subscriptions(self):
         return [
@@ -66,23 +50,19 @@ class ServiceClient:
             }
         ]
 
-    # Any custom behaviour that the service might need
-    def configure(self) -> None:
-        pass
-
-    def execute(self, task: Any, profiler: StageProfiler) -> TaskOutput:
-        raise Exception("Please define execute method")
-
     def handle_request(self, body):
         uuid = path(["uuid"], body)
-        self.log.debug(f"[{uuid}] Task received")
+        if uuid is None:
+            raise Exception("No uuid found")
+
+        self.logger.track(uuid)
+        self.logger.debug(f"[{uuid}] Task received")
         started = now()
         try:
             task = Task(**body)
             # TODO: if body is an url, should try and retrieve it
             # before passing down for validation
-            profiler = StageProfiler()
-            plugin_result = self.execute(body, profiler)
+            plugin_result = self.worker.execute(body)
             if not isinstance(plugin_result, PluginOutput):
                 raise Exception(
                     "Received invalid task output. Expected PluginOutput, received: {}".format(
@@ -90,23 +70,24 @@ class ServiceClient:
                     )
                 )
             finished = now()
-            self.log.debug("[{uuid}] Task finished, publishing", uuid=task.uuid)
+            self.logger.debug(
+                "[{uuid}] Task finished, publishing", uuid=task.uuid
+            )
             result = TaskOutput(
                 uuid=task.uuid,
                 started=started,
                 finished=finished,
-                profiling=profiler.entries,
                 output=plugin_result.output,
                 actions=plugin_result.actions,
                 plugin_id=task.current.id,
             )
             output = result.dict()
             self.publish(self.finished, output)
-            self.log.debug("[{uuid}] Published, done", uuid=task.uuid)
+            self.logger.debug("[{uuid}] Published, done", uuid=task.uuid)
         except ValidationError as e:
             exc_info = sys.exc_info()
             exception = "".join(traceback.format_exception(*exc_info))
-            self.log.error(f"[{uuid}] Failed to parse task body {exception}")
+            self.logger.error(f"[{uuid}] Failed to parse task body {exception}")
             output = {
                 "uuid": uuid,
                 "started": started,
@@ -121,7 +102,7 @@ class ServiceClient:
         except Exception as e:
             exc_info = sys.exc_info()
             exception = "".join(traceback.format_exception(*exc_info))
-            self.log.error(f"[{uuid}] Failed to parse task body {exception}")
+            self.logger.error(f"[{uuid}] Failed to parse task body {exception}")
             output = {
                 "uuid": uuid,
                 "started": started,
@@ -135,9 +116,11 @@ class ServiceClient:
                 },
             }
             self.publish(self.failed, output)
+        logs = self.logger.consume_logs()
+        self.publish(self.logs, [log.dict() for log in logs])
         return output
 
-    def publish(self, topic: str, data: Dict[str, Any]) -> None:
+    def publish(self, topic: str, data: Any) -> None:
         self.client.publish_event(
             pubsub_name=self.env.OUTPUT_PUB_SUB,
             topic_name=topic,
