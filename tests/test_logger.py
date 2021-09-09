@@ -5,6 +5,7 @@ def test_logger():
     log = Logger()
     log.track("test-uuid")
 
+    log.info("Hello {name}", name="test")
     log.debug("Hello {name}", name="test")
     log.success("Hello {name}", name="test")
     log.warning("Hello {name}", name="test")
@@ -15,4 +16,4 @@ def test_logger():
     except Exception as e:
         log.exception(e)
 
-    assert len(log.consume_logs()) == 6
+    assert len(log.consume_logs()) == 7

@@ -69,6 +69,9 @@ class Logger:
     def debug(self, msg: str, *args: Any, **kwargs: Any) -> None:
         self.logger.debug(msg, *args, **kwargs)
 
+    def info(self, msg: str, *args: Any, **kwargs: Any) -> None:
+        self.logger.info(msg, *args, **kwargs)
+
     def success(self, msg: str, *args: Any, **kwargs: Any) -> None:
         self.logger.success(msg, *args, **kwargs)
 
