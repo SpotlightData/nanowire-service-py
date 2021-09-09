@@ -25,17 +25,29 @@ class Logger:
 
     def __init__(self, log: Any = logger):
         self.primary = log
-        self.logger = self.primary
+        # self.logger = self.primary
         self.logs = []
         self.handler_id = None
         self.uuid = None
+        self.update_logger(self.primary)
+
+    # We can't have wrapers, otherwise function context gets removed
+    def update_logger(self, logger):
+        self.logger = logger
+        self.debug = self.logger.debug
+        self.info = self.logger.info
+        self.success = self.logger.success
+        self.warning = self.logger.warning
+        self.error = self.logger.error
+        self.critical = self.logger.critical
+        self.exception = self.logger.exception
 
     def consume_logs(self) -> List[LogEntry]:
         logs = self.logs
         self.logs = []
         if self.handler_id is not None:
             self.logger.remove(self.handler_id)
-        self.logger = self.primary
+        self.update_logger(self.primary)
         self.uuid = None
         self.handler_id = None
         return logs
@@ -63,26 +75,5 @@ class Logger:
 
     def track(self, uuid: str) -> None:
         self.uuid = uuid
-        self.logger = self.primary.bind(uuid=uuid)
+        self.update_logger(self.primary.bind(uuid=uuid))
         self.handler_id = self.logger.add(self.track_message, serialize=True)
-
-    def debug(self, msg: str, *args: Any, **kwargs: Any) -> None:
-        self.logger.debug(msg, *args, **kwargs)
-
-    def info(self, msg: str, *args: Any, **kwargs: Any) -> None:
-        self.logger.info(msg, *args, **kwargs)
-
-    def success(self, msg: str, *args: Any, **kwargs: Any) -> None:
-        self.logger.success(msg, *args, **kwargs)
-
-    def warning(self, msg: str, *args: Any, **kwargs: Any) -> None:
-        self.logger.warning(msg, *args, **kwargs)
-
-    def error(self, msg: str, *args: Any, **kwargs: Any) -> None:
-        self.logger.error(msg, *args, **kwargs)
-
-    def critical(self, msg: str, *args: Any, **kwargs: Any) -> None:
-        self.logger.critical(msg, *args, **kwargs)
-
-    def exception(self, e: Exception, *args: Any, **kwargs: Any) -> None:
-        self.logger.exception(e, *args, **kwargs)
