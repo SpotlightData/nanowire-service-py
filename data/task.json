@@ -1,0 +1,46 @@
+{
+  "uuid": "9f0fd649-f4fb-418d-87d6-b8f7908e97c8",
+  "args": {
+    "101": {
+      "id": 101,
+      "plugin": "scraper",
+      "value": {}
+    }
+  },
+  "meta": {
+    "101": {
+      "id": 101,
+      "plugin": "scraper",
+      "value": {}
+    }
+  },
+  "children": [
+    {
+      "id": 104,
+      "workflow": "e8cfa470-9a70-4398-ac83-74b56b6af334",
+      "plugin": "sql-storage",
+      "default_args": {},
+      "meta": {},
+      "parent": 103
+    }
+  ],
+  "path": {
+    "uuid": "0fc75370-0631-4438-a5d3-c938bb3d6f2e",
+    "instance": "30de1298-4345-4ceb-9ac0-a2a6038874da",
+    "parent": "30de1298-4345-4ceb-9ac0-a2a6038874da",
+    "meta": {},
+    "state": {},
+    "branched": false,
+    "workflow": "e8cfa470-9a70-4398-ac83-74b56b6af334",
+    "created": "2021-09-08T09:41:46.73153"
+  },
+  "current": {
+    "id": 103,
+    "workflow": "e8cfa470-9a70-4398-ac83-74b56b6af334",
+    "plugin": "classifier",
+    "default_args": {},
+    "meta": {},
+    "parent": -1
+  },
+  "part_of": "regular"
+}

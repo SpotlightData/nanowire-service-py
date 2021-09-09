@@ -1,8 +1,9 @@
 # type: ignore[attr-defined]
 """Wrapper for interacting with Nanowire platform"""
 from .types import *
-from .service import *
+from .service import ServiceClient, Worker
 from .utils import *
+from .logger import Logger
 
 try:
     from importlib.metadata import PackageNotFoundError, version

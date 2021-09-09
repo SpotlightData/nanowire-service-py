@@ -17,7 +17,7 @@ class Worker:
             raise Exception("Expected a valid nanowire logger")
         self.logger = logger
 
-    def execute(self, task: Any) -> TaskOutput:
+    def execute(self, task: Any) -> PluginOutput:
         raise Exception("Please define execute method")
 
 
@@ -29,14 +29,14 @@ class ServiceClient:
     logger: Logger
     worker: Worker
 
-    def __init__(self, env: Any, logger: Logger, worker: Worker):  # type: ignore
+    def __init__(self, env: Any, logger: Logger, worker: Worker):
         self.client = DaprClient()
         self.raw_env = env
         self.env = Environment(**env)
         self.worker = worker
 
         self.route = "/receive"
-        self.log = logger
+        self.logger = logger
         self.failed = "failed"
         self.finished = "finished"
         self.logs = "logs"

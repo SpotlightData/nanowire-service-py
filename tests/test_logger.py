@@ -1,7 +1,7 @@
 from nanowire_service_py import Logger  # type: ignore
 
 
-def test_imports():
+def test_logger():
     log = Logger()
     log.track("test-uuid")
 
