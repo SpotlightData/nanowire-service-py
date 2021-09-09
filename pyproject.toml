@@ -41,6 +41,7 @@ pytest = "^6.2.1"
 pylint = "^2.6.0"
 mypy = "^0.910"
 bandit = "^1.7.0"
+safety = "^1.10.3"
 
 [tool.black]
 # https://github.com/psf/black
