@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, List, Literal
+from typing import Any, Dict, Optional, List, Literal, Union
 from pydantic import BaseModel, ValidationError
 
 
@@ -57,10 +57,15 @@ class BranchAction(BaseModel):
 
     actions: BaseActions
 
+class PathUpdate(BaseModel):
+    state : Dict[str, Any]
+    meta : Dict[str, Any]
+
 
 class Actions(BaseActions):
     close: bool = False
     branch: List[BranchAction] = []
+    path_update : Optional[PathUpdate]
 
 
 class PluginOutput(BaseModel):
@@ -98,3 +103,7 @@ class GroupedInput(BaseModel):
 class MultiInputTask(Task):
     args: Dict[str, MultiInput]
     meta: Dict[str, MultiInput]
+
+class MultiOrSingleInputTask(Task):
+    args: Union[Dict[str, MultiInput], Dict[str, Any]]
+    meta: Union[Dict[str, MultiInput], Dict[str, Any]]
