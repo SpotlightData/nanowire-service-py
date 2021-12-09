@@ -53,7 +53,10 @@ class Logger:
         return logs
 
     def track_message(self, message):
-
+        uuid = self.uuid
+        if uuid is None:
+            self.logger.warning("Tried to track message with missing uuid")
+            return
         record = json.loads(message)["record"]
         cleaned = json.loads(message)["record"]
         # Cleanup
@@ -64,7 +67,7 @@ class Logger:
         del cleaned["time"]
         self.logs.append(
             LogEntry(
-                uuid=self.uuid,
+                uuid=uuid,
                 timestamp=record["time"]["timestamp"],
                 level=record["level"]["name"]
                 if record["exception"] is None
