@@ -93,7 +93,6 @@ class ServiceClient:
                 "started": started,
                 "finished": now(),
                 "error": {
-                    "body": body,
                     "why": "ValidationError",
                     "errors": json.loads(e.json()),
                 },
@@ -108,7 +107,6 @@ class ServiceClient:
                 "started": started,
                 "finished": now(),
                 "error": {
-                    "body": body,
                     "why": "Exception",
                     "message": str(e),
                     "type": repr(e),
