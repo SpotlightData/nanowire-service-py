@@ -1,5 +1,6 @@
 from typing import Any, Dict
 import json, traceback, sys
+import time
 
 from pydantic import BaseModel, ValidationError
 from dapr.clients import DaprClient
@@ -118,10 +119,22 @@ class ServiceClient:
         self.publish(self.logs, [log.dict() for log in logs])
         return output
 
-    def publish(self, topic: str, data: Any) -> None:
-        self.client.publish_event(
-            pubsub_name=self.env.OUTPUT_PUB_SUB,
-            topic_name=topic,
-            data_content_type="application/json",
-            data=safe_dump(data),
-        )
+    def publish(self, topic: str, data: Any, retry_count=10) -> None:
+        try:
+            self.client.publish_event(
+                pubsub_name=self.env.OUTPUT_PUB_SUB,
+                topic_name=topic,
+                data_content_type="application/json",
+                data=safe_dump(data),
+            )
+        except Exception as e:
+            self.logger.error(e)
+            if retry_count > 0:
+                self.logger.warning(
+                    "Failed to publish. This could be cause by high load, will attempt to re-publish"
+                )
+                time.sleep(5)
+                self.publish(topic, data, retry_count - 1)
+            else:
+                self.logger.error("No more retries")
+                raise e
