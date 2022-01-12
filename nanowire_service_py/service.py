@@ -119,7 +119,7 @@ class ServiceClient:
         self.publish(self.logs, [log.dict() for log in logs])
         return output
 
-    def publish(self, topic: str, data: Any, retry_count=10) -> None:
+    def publish(self, topic: str, data: Any, retry_count: int = 10) -> None:
         try:
             self.client.publish_event(
                 pubsub_name=self.env.OUTPUT_PUB_SUB,
